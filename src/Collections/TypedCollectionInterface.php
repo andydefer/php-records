@@ -63,6 +63,24 @@ interface TypedCollectionInterface extends ArrayAccess, Countable, IteratorAggre
     public function isNotEmpty(): bool;
 
     /**
+     * Check if all items satisfy the given predicate.
+     *
+     * Returns true for empty collections (vacuously true).
+     *
+     * @param  Closure(TValue): bool  $callback
+     */
+    public function every(Closure $callback): bool;
+
+    /**
+     * Check if at least one item satisfies the given predicate.
+     *
+     * Returns false for empty collections.
+     *
+     * @param  Closure(TValue): bool  $callback
+     */
+    public function some(Closure $callback): bool;
+
+    /**
      * Map items to a new collection.
      *
      * @template TReturn

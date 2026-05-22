@@ -7,35 +7,50 @@ namespace AndyDefer\Records\Collections\Utility;
 use AndyDefer\Records\Collections\TypedCollection;
 
 /**
- * Collection typée pour les booléens.
+ * Type-safe collection for boolean values.
+ *
+ * Provides specialized methods for boolean operations including filtering,
+ * counting, and validation of boolean states across the collection.
  *
  * @extends TypedCollection<bool>
  */
 final class BoolTypedCollection extends TypedCollection
 {
+    /**
+     * Create a new boolean collection.
+     *
+     * The constructor enforces that all items added to this collection must be
+     * of type boolean.
+     */
     public function __construct()
     {
         parent::__construct('bool');
     }
 
     /**
-     * Garde uniquement les valeurs true.
+     * Filter the collection to keep only true values.
+     *
+     * @return self New collection containing only true values
      */
     public function trueOnly(): self
     {
-        return $this->filter(fn ($item) => $item === true);
+        return $this->filter(fn($item): bool => $item === true);
     }
 
     /**
-     * Garde uniquement les valeurs false.
+     * Filter the collection to keep only false values.
+     *
+     * @return self New collection containing only false values
      */
     public function falseOnly(): self
     {
-        return $this->filter(fn ($item) => $item === false);
+        return $this->filter(fn($item): bool => $item === false);
     }
 
     /**
-     * Compte le nombre de true.
+     * Count how many true values are in the collection.
+     *
+     * @return int Number of true values
      */
     public function countTrue(): int
     {
@@ -43,7 +58,9 @@ final class BoolTypedCollection extends TypedCollection
     }
 
     /**
-     * Compte le nombre de false.
+     * Count how many false values are in the collection.
+     *
+     * @return int Number of false values
      */
     public function countFalse(): int
     {
@@ -51,7 +68,11 @@ final class BoolTypedCollection extends TypedCollection
     }
 
     /**
-     * Vérifie si toutes les valeurs sont true.
+     * Check if all values in the collection are true.
+     *
+     * For an empty collection, returns true (vacuously true).
+     *
+     * @return bool True if every item is true, false otherwise
      */
     public function allTrue(): bool
     {
@@ -59,7 +80,11 @@ final class BoolTypedCollection extends TypedCollection
     }
 
     /**
-     * Vérifie si toutes les valeurs sont false.
+     * Check if all values in the collection are false.
+     *
+     * For an empty collection, returns true (vacuously true).
+     *
+     * @return bool True if every item is false, false otherwise
      */
     public function allFalse(): bool
     {
@@ -67,7 +92,9 @@ final class BoolTypedCollection extends TypedCollection
     }
 
     /**
-     * Vérifie si au moins une valeur est true.
+     * Check if at least one value in the collection is true.
+     *
+     * @return bool True if at least one true value exists, false otherwise
      */
     public function anyTrue(): bool
     {
@@ -75,7 +102,9 @@ final class BoolTypedCollection extends TypedCollection
     }
 
     /**
-     * Vérifie si au moins une valeur est false.
+     * Check if at least one value in the collection is false.
+     *
+     * @return bool True if at least one false value exists, false otherwise
      */
     public function anyFalse(): bool
     {

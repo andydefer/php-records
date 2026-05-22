@@ -2367,4 +2367,385 @@ final class TypedCollectionTest extends TestCase
         // Act
         $collection->assertRecords();
     }
+
+    // ========== TESTS POUR EVERY ==========
+
+    public function test_every_returns_true_when_all_items_satisfy_predicate(): void
+    {
+        // Arrange: Create a collection with positive integers
+        $collection = new TypedCollection('int');
+        $collection->add(2, 4, 6, 8, 10);
+
+        // Act: Check if all items are even
+        $result = $collection->every(fn($item) => $item % 2 === 0);
+
+        // Assert: All items are even
+        $this->assertTrue($result);
+    }
+
+    public function test_every_returns_false_when_any_item_fails_predicate(): void
+    {
+        // Arrange: Create a collection with mixed even and odd numbers
+        $collection = new TypedCollection('int');
+        $collection->add(2, 4, 5, 8, 10);
+
+        // Act: Check if all items are even
+        $result = $collection->every(fn($item) => $item % 2 === 0);
+
+        // Assert: Not all items are even
+        $this->assertFalse($result);
+    }
+
+    public function test_every_returns_true_for_empty_collection(): void
+    {
+        // Arrange: Create an empty collection
+        $collection = new TypedCollection('int');
+
+        // Act: Check a predicate on empty collection
+        $result = $collection->every(fn($item) => $item > 100);
+
+        // Assert: Empty collections satisfy any predicate (vacuously true)
+        $this->assertTrue($result);
+    }
+
+    public function test_every_stops_iteration_early_on_failure(): void
+    {
+        // Arrange: Create a collection and track iterations
+        $collection = new TypedCollection('int');
+        $collection->add(1, 2, 3, 4, 5);
+        $iterations = 0;
+
+        // Act: Check predicate that fails on first item but track iterations
+        $result = $collection->every(function ($item) use (&$iterations) {
+            $iterations++;
+            return $item > 5;
+        });
+
+        // Assert: Should have stopped after first item
+        $this->assertFalse($result);
+        $this->assertSame(1, $iterations);
+    }
+
+    public function test_every_works_with_strings(): void
+    {
+        // Arrange: Create a collection of strings
+        $collection = new TypedCollection('string');
+        $collection->add('apple', 'banana', 'cherry');
+
+        // Act: Check if all strings start with a vowel
+        $result = $collection->every(fn($item) => in_array($item[0], ['a', 'e', 'i', 'o', 'u']));
+
+        // Assert: 'apple' starts with vowel, 'banana' and 'cherry' do not
+        $this->assertFalse($result);
+    }
+
+    public function test_every_works_with_records(): void
+    {
+        // Arrange: Create a collection of products
+        $collection = new TypedCollection(TestProductRecord::class);
+        $collection->add(
+            new TestProductRecord(name: 'Product A', price: 100, isFeatured: true),
+            new TestProductRecord(name: 'Product B', price: 200, isFeatured: true),
+            new TestProductRecord(name: 'Product C', price: 300, isFeatured: true)
+        );
+
+        // Act: Check if all products are featured
+        $result = $collection->every(fn($item) => $item->isFeatured === true);
+
+        // Assert: All products are featured
+        $this->assertTrue($result);
+    }
+
+    public function test_every_works_with_mixed_collection(): void
+    {
+        // Arrange: Create a collection with mixed numbers
+        $collection = new TypedCollection('int', 'float');
+        $collection->add(5, 7.5, 3, 8.2);
+
+        // Act: Check if all items are greater than 2
+        $result = $collection->every(fn($item) => $item > 2);
+
+        // Assert: All items are greater than 2
+        $this->assertTrue($result);
+    }
+
+    public function test_every_with_complex_condition_on_stdclass(): void
+    {
+        // Arrange: Create a collection of stdClass objects
+        $collection = new TypedCollection(stdClass::class);
+
+        $obj1 = new stdClass();
+        $obj1->age = 25;
+
+        $obj2 = new stdClass();
+        $obj2->age = 30;
+
+        $obj3 = new stdClass();
+        $obj3->age = 28;
+
+        $collection->add($obj1, $obj2, $obj3);
+
+        // Act: Check if all ages are >= 18
+        $result = $collection->every(fn($item) => $item->age >= 18);
+
+        // Assert: All ages are above 18
+        $this->assertTrue($result);
+    }
+
+    // ========== TESTS POUR SOME ==========
+
+    public function test_some_returns_true_when_at_least_one_item_satisfies_predicate(): void
+    {
+        // Arrange: Create a collection with mixed positive and negative numbers
+        $collection = new TypedCollection('int');
+        $collection->add(-5, -3, 0, 7, -1);
+
+        // Act: Check if any item is positive
+        $result = $collection->some(fn($item) => $item > 0);
+
+        // Assert: At least one positive number exists
+        $this->assertTrue($result);
+    }
+
+    public function test_some_returns_false_when_no_item_satisfies_predicate(): void
+    {
+        // Arrange: Create a collection with only negative numbers
+        $collection = new TypedCollection('int');
+        $collection->add(-5, -3, -8, -1, -10);
+
+        // Act: Check if any item is positive
+        $result = $collection->some(fn($item) => $item > 0);
+
+        // Assert: No positive numbers exist
+        $this->assertFalse($result);
+    }
+
+    public function test_some_returns_false_for_empty_collection(): void
+    {
+        // Arrange: Create an empty collection
+        $collection = new TypedCollection('int');
+
+        // Act: Check a predicate on empty collection
+        $result = $collection->some(fn($item) => $item > 0);
+
+        // Assert: Empty collections return false for some()
+        $this->assertFalse($result);
+    }
+
+    public function test_some_stops_iteration_early_on_success(): void
+    {
+        // Arrange: Create a collection and track iterations
+        $collection = new TypedCollection('int');
+        $collection->add(1, 2, 3, 4, 5);
+        $iterations = 0;
+
+        // Act: Check predicate that succeeds on third item
+        $result = $collection->some(function ($item) use (&$iterations) {
+            $iterations++;
+            return $item === 3;
+        });
+
+        // Assert: Should have stopped at third item
+        $this->assertTrue($result);
+        $this->assertSame(3, $iterations);
+    }
+
+    public function test_some_works_with_strings(): void
+    {
+        // Arrange: Create a collection of strings
+        $collection = new TypedCollection('string');
+        $collection->add('cat', 'dog', 'elephant', 'fish');
+
+        // Act: Check if any string contains the letter 'x'
+        $result = $collection->some(fn($item) => str_contains($item, 'x'));
+
+        // Assert: No string contains 'x'
+        $this->assertFalse($result);
+    }
+
+    public function test_some_works_with_records(): void
+    {
+        // Arrange: Create a collection of products
+        $collection = new TypedCollection(TestProductRecord::class);
+        $collection->add(
+            new TestProductRecord(name: 'Product A', price: 100, isFeatured: false),
+            new TestProductRecord(name: 'Product B', price: 200, isFeatured: true),
+            new TestProductRecord(name: 'Product C', price: 300, isFeatured: false)
+        );
+
+        // Act: Check if any product is featured
+        $result = $collection->some(fn($item) => $item->isFeatured === true);
+
+        // Assert: At least one featured product exists
+        $this->assertTrue($result);
+    }
+
+    public function test_some_works_with_mixed_collection(): void
+    {
+        // Arrange: Create a collection with mixed types
+        $collection = new TypedCollection('int', 'string', 'float');
+        $collection->add(42, 'hello', 3.14);
+
+        // Act: Check if any item is a boolean
+        $result = $collection->some(fn($item) => is_bool($item));
+
+        // Assert: No boolean values exist
+        $this->assertFalse($result);
+    }
+
+    public function test_some_with_complex_condition_on_stdclass(): void
+    {
+        // Arrange: Create a collection of stdClass objects
+        $collection = new TypedCollection(stdClass::class);
+
+        $obj1 = new stdClass();
+        $obj1->status = 'pending';
+
+        $obj2 = new stdClass();
+        $obj2->status = 'processing';
+
+        $obj3 = new stdClass();
+        $obj3->status = 'completed';
+
+        $collection->add($obj1, $obj2, $obj3);
+
+        // Act: Check if any item has status 'completed'
+        $result = $collection->some(fn($item) => $item->status === 'completed');
+
+        // Assert: At least one completed item exists
+        $this->assertTrue($result);
+    }
+
+    // ========== TESTS COMBINÉS POUR EVERY ET SOME ==========
+
+    public function test_every_and_some_together_for_validation(): void
+    {
+        // Arrange: Create a collection of valid age records
+        $collection = new TypedCollection('int');
+        $collection->add(25, 30, 35, 40);
+
+        // Act & Assert: Use both methods for comprehensive validation
+        $this->assertTrue($collection->every(fn($age) => $age >= 18));
+        $this->assertFalse($collection->some(fn($age) => $age >= 65));
+        $this->assertFalse($collection->some(fn($age) => $age < 18));
+    }
+
+    public function test_every_and_some_on_large_collection_performance(): void
+    {
+        // Arrange: Create a large collection
+        $collection = new TypedCollection('int');
+        $largeArray = range(1, 1000);
+        $collection->add(...$largeArray);
+
+        // Act & Assert: every() on large collection
+        $startTime = microtime(true);
+        $result = $collection->every(fn($item) => $item > 0);
+        $executionTime = microtime(true) - $startTime;
+
+        $this->assertTrue($result);
+        $this->assertLessThan(1.0, $executionTime, 'every() took too long');
+
+        // Act & Assert: some() on large collection
+        $startTime = microtime(true);
+        $result = $collection->some(fn($item) => $item === 1000);
+        $executionTime = microtime(true) - $startTime;
+
+        $this->assertTrue($result);
+        $this->assertLessThan(1.0, $executionTime, 'some() took too long');
+    }
+
+    public function test_every_with_type_safety_preserved(): void
+    {
+        // Arrange: Create a typed collection
+        $collection = new TypedCollection('int');
+        $collection->add(1, 2, 3, 4, 5);
+
+        // Act: every() does not modify the collection
+        $result = $collection->every(fn($item) => $item > 0);
+
+        // Assert: Collection remains unchanged
+        $this->assertTrue($result);
+        $this->assertSame([1, 2, 3, 4, 5], $collection->toArray());
+        $this->assertSame(['int'], $collection->getAllowedTypes());
+    }
+
+    public function test_some_with_type_safety_preserved(): void
+    {
+        // Arrange: Create a typed collection
+        $collection = new TypedCollection('string');
+        $collection->add('apple', 'banana', 'cherry');
+
+        // Act: some() does not modify the collection
+        $result = $collection->some(fn($item) => $item === 'banana');
+
+        // Assert: Collection remains unchanged
+        $this->assertTrue($result);
+        $this->assertSame(['apple', 'banana', 'cherry'], $collection->toArray());
+        $this->assertSame(['string'], $collection->getAllowedTypes());
+    }
+
+    public function test_every_with_null_values(): void
+    {
+        // Arrange: Create a collection with null values
+        $collection = new TypedCollection('string', 'null');
+        $collection->add('hello', null, 'world', null);
+
+        // Act: Check if all non-null items are strings
+        $result = $collection->every(fn($item) => $item === null || is_string($item));
+
+        // Assert: All items are either null or strings
+        $this->assertTrue($result);
+    }
+
+    public function test_some_with_null_values(): void
+    {
+        // Arrange: Create a collection with null values
+        $collection = new TypedCollection('string', 'null');
+        $collection->add('hello', 'world');
+
+        // Act: Check if any null exists
+        $result = $collection->some(fn($item) => $item === null);
+
+        // Assert: No null values present
+        $this->assertFalse($result);
+
+        // Act: Add a null and test again
+        $collection->add(null);
+        $resultWithNull = $collection->some(fn($item) => $item === null);
+
+        // Assert: Now a null exists
+        $this->assertTrue($resultWithNull);
+    }
+
+    public function test_every_and_some_chain_together(): void
+    {
+        // Arrange: Create a collection of products
+        $collection = new TypedCollection(TestProductRecord::class);
+        $collection->add(
+            new TestProductRecord(name: 'Product A', price: 100),
+            new TestProductRecord(name: 'Product B', price: 150),
+            new TestProductRecord(name: 'Product C', price: 200)
+        );
+
+        // Act: Chain operations with every() and some()
+        $result = $collection
+            ->filter(fn($item) => $item->price >= 100)
+            ->every(fn($item) => $item->price >= 100);
+
+        // Assert: After filtering, all items satisfy condition
+        $this->assertTrue($result);
+    }
+
+    public function test_every_and_some_with_fluent_interface(): void
+    {
+        // Arrange: Create and use collection
+        $collection = (new TypedCollection('int'))
+            ->add(1, 2, 3, 4, 5);
+
+        // Act & Assert: Chain assertions
+        $this->assertTrue($collection->every(fn($item) => $item > 0));
+        $this->assertTrue($collection->some(fn($item) => $item === 5));
+        $this->assertFalse($collection->some(fn($item) => $item > 10));
+        $this->assertFalse($collection->every(fn($item) => $item < 3));
+    }
 }

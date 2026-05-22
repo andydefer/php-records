@@ -14,7 +14,8 @@ use UnitEnum;
 /**
  * Type-safe collection for records and scalar values.
  *
- * Supports multiple allowed types at construction.
+ * Supports multiple allowed types at construction. All items added to the
+ * collection are validated against the allowed types.
  *
  * @template TValue of object|string|int|float|bool
  */
@@ -109,27 +110,27 @@ class TypedCollection implements TypedCollectionInterface
      */
     private function validateSingleType(string $type): void
     {
-        // Types scalaires autorisés
+        // Allowed scalar types
         if (in_array($type, self::getScalarTypes(), true)) {
             return;
         }
 
-        // TypedCollection imbriqué
+        // Nested TypedCollection
         if ($type === self::class) {
             return;
         }
 
-        // AbstractRecord et ses descendants
+        // AbstractRecord and its descendants
         if ($type === AbstractRecord::class) {
             return;
         }
 
-        // stdClass uniquement - pas d'autres objets !
+        // stdClass only - no other objects!
         if ($type === stdClass::class) {
             return;
         }
 
-        // Vérification pour les classes Record
+        // Verification for Record classes
         if (! class_exists($type)) {
             throw new InvalidArgumentException(sprintf('Type "%s" is not a valid class', $type));
         }
@@ -153,22 +154,22 @@ class TypedCollection implements TypedCollectionInterface
         $valueType = self::normalizeType(gettype($value));
 
         foreach ($this->allowedTypes as $allowedType) {
-            // Correspondance par type scalaire
+            // Match by scalar type
             if ($valueType === $allowedType) {
                 return true;
             }
 
-            // Correspondance pour TypedCollection imbriqué
+            // Match for nested TypedCollection
             if ($allowedType === self::class && $value instanceof self) {
                 return true;
             }
 
-            // Correspondance pour stdClass UNIQUEMENT
+            // Match for stdClass ONLY
             if ($allowedType === stdClass::class && $value instanceof stdClass) {
                 return true;
             }
 
-            // Correspondance pour les Records
+            // Match for Records
             if ($value instanceof $allowedType) {
                 return true;
             }
@@ -210,7 +211,7 @@ class TypedCollection implements TypedCollectionInterface
      */
     private function validateItem(mixed $item): void
     {
-        // Interdiction formelle des Enums
+        // Strictly forbid Enums
         if ($item instanceof UnitEnum) {
             throw new InvalidArgumentException(sprintf(
                 'Enum %s is not allowed in TypedCollection. Use its scalar value instead.',
@@ -218,7 +219,7 @@ class TypedCollection implements TypedCollectionInterface
             ));
         }
 
-        // Interdiction des objets qui ne sont pas stdClass
+        // Forbid objects that are not stdClass
         if (is_object($item) && ! ($item instanceof stdClass) && ! ($item instanceof AbstractRecord) && ! ($item instanceof self)) {
             throw new InvalidArgumentException(sprintf(
                 'Object of type "%s" is not allowed in TypedCollection. Only stdClass, AbstractRecord, and TypedCollection are allowed.',
@@ -249,7 +250,8 @@ class TypedCollection implements TypedCollectionInterface
     /**
      * Add one or multiple items.
      *
-     * @return TypedCollection<TValue>
+     * @param  TValue  ...$items
+     * @return static<TValue>
      */
     final public function add(int|string|float|bool|null|AbstractRecord|TypedCollection|stdClass ...$items): static
     {
@@ -276,7 +278,7 @@ class TypedCollection implements TypedCollectionInterface
     /**
      * Get all items as a new TypedCollection collection.
      *
-     * @return TypedCollection<TValue>
+     * @return static<TValue>
      */
     final public function all(): static
     {
@@ -309,6 +311,42 @@ class TypedCollection implements TypedCollectionInterface
     final public function isNotEmpty(): bool
     {
         return ! $this->isEmpty();
+    }
+
+    /**
+     * Check if all items satisfy the given predicate.
+     *
+     * Returns true for empty collections (vacuously true).
+     *
+     * @param  Closure(TValue): bool  $callback
+     */
+    final public function every(Closure $callback): bool
+    {
+        foreach ($this->items as $item) {
+            if (! $callback($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if at least one item satisfies the given predicate.
+     *
+     * Returns false for empty collections.
+     *
+     * @param  Closure(TValue): bool  $callback
+     */
+    final public function some(Closure $callback): bool
+    {
+        foreach ($this->items as $item) {
+            if ($callback($item)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     final public function map(Closure $callback): static
