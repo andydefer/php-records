@@ -245,9 +245,9 @@ update-all: update-checklist list-modified-files ## Update all file management f
 
 .PHONY: concat-all
 concat-all: ## Concatenate all PHP files into all.txt
-	@read -p "📁 Enter the source directory path to scan (leave empty for default './app ./database ./routes'): " SOURCE_PATH; \
+	@read -p "📁 Enter the source directory path to scan (leave empty for default './src ./tests'): " SOURCE_PATH; \
 	if [ -z "$$SOURCE_PATH" ]; then \
-		SOURCE_DIRS="./app ./database ./routes"; \
+		SOURCE_DIRS="./src ./tests"; \
 		echo "🔗 Concatenating all PHP files from default directories: $${SOURCE_DIRS} into all.txt..."; \
 	else \
 		SOURCE_DIRS="$$SOURCE_PATH"; \
@@ -390,7 +390,6 @@ lint-all-md: ## Run all linters and save reports (non-blocking)
 lint-all-fix-md: ## Run all fixers and save reports (non-blocking)
 	@echo "📦 Running all code fixers and saving reports..."
 	@make lint-php-fix-md
-	@make lint-rector-md
 	@echo "✅ All code fixer reports generated"
 
 # ---------------------------------------------------

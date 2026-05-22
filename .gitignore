@@ -1,10 +1,15 @@
+# Documentation
 docs/
 all.md
 all.txt
 Makefile
 pint-test.md
 rector.md
+
+# Dependencies
+/vendor/
 composer.lock
+
+# Cache and temp files
 *.cache
 *.bak
-/vendor/
