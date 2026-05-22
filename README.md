@@ -305,26 +305,27 @@ $nested->add($tags, $ids);
 | Méthode | Description | Exemple |
 |---------|-------------|---------|
 | `add(...$items)` | Ajoute des éléments | `$tags->add('a', 'b', 'c')` |
-| `all(): array` | Retourne tous les éléments | `$tags->all()` |
 | `toArray(): array` | Retourne tous les éléments | `$tags->toArray()` |
 | `count(): int` | Nombre d'éléments | `$tags->count()` |
 | `isEmpty(): bool` | Collection vide ? | `$tags->isEmpty()` |
 | `isNotEmpty(): bool` | Collection non vide ? | `$tags->isNotEmpty()` |
+| `getAllowedTypes(): array` | Types autorisés | `$tags->getAllowedTypes()` |
 | `firstItem(): mixed` | Premier élément | `$tags->firstItem()` |
 | `first(int $limit): static` | N premiers éléments | `$tags->first(3)` |
 | `lastItem(): mixed` | Dernier élément | `$tags->lastItem()` |
 | `last(int $limit): static` | N derniers éléments | `$tags->last(3)` |
-| `getAllowedTypes(): array` | Types autorisés | `$tags->getAllowedTypes()` |
 
-### Transformation
+### Transformation et requêtes
 
 | Méthode | Description | Exemple |
 |---------|-------------|---------|
+| `every(Closure): bool` | Tous les éléments satisfont ? | `$collection->every(fn($i) => $i > 0)` |
+| `some(Closure): bool` | Un élément satisfait ? | `$collection->some(fn($i) => $i > 10)` |
 | `map(Closure): static` | Transforme chaque élément | `$tags->map(fn($t) => strtoupper($t))` |
 | `filter(Closure): static` | Filtre les éléments | `$tags->filter(fn($t) => strlen($t) > 3)` |
 | `reject(Closure): static` | Rejette les éléments | `$tags->reject(fn($t) => strlen($t) > 3)` |
 | `each(Closure): static` | Action sur chaque élément | `$tags->each(fn($t) => echo $t)` |
-| `sort(): static` | Trie les éléments | `$numbers->sort()` |
+| `sort(int): static` | Trie les éléments | `$numbers->sort()` |
 | `sortBy(Closure|string, bool): static` | Trie par clé/fonction | `$products->sortBy('price')` |
 | `reverse(): static` | Inverse l'ordre | `$collection->reverse()` |
 | `shuffle(): static` | Mélange aléatoirement | `$collection->shuffle()` |
@@ -350,7 +351,7 @@ $nested->add($tags, $ids);
 | `anyRecord(): static` | Tous les Records | `$collection->anyRecord()` |
 | `getTypes(): static` | Types distincts présents | `$collection->getTypes()` |
 
-### Recherche
+### Recherche et présence
 
 | Méthode | Description | Exemple |
 |---------|-------------|---------|
@@ -403,46 +404,218 @@ $nested->add($tags, $ids);
 
 Le package fournit des collections pré-typées pour les cas d'usage les plus courants.
 
-### Liste des collections
+### StringTypedCollection
 
-| Classe | Type | Méthodes spécifiques |
-|--------|------|---------------------|
-| `StringTypedCollection` | `string` | `toLowercase()`, `toUppercase()`, `containsSubstring()`, `startsWith()`, `endsWith()`, `filterEmpty()`, `trim()`, `truncate()` |
-| `IntTypedCollection` | `int` | `even()`, `odd()`, `median()`, `zero()`, `nonNegative()` |
-| `FloatTypedCollection` | `float` | `round()`, `ceil()`, `floor()`, `format()` |
-| `BoolTypedCollection` | `bool` | `trueOnly()`, `falseOnly()`, `countTrue()`, `countFalse()`, `allTrue()`, `allFalse()`, `anyTrue()`, `anyFalse()` |
-| `NumberTypedCollection` | `int\|float` | `positive()`, `negative()`, `between()`, `average()`, `zero()`, `nonNegative()` |
-
-### Utilisation
+Collection spécialisée pour les chaînes de caractères.
 
 ```php
 use AndyDefer\Records\Collections\Utility\StringTypedCollection;
+
+$strings = new StringTypedCollection();
+$strings->add('  HELLO  ', 'world', 'PHP', '', '  test  ');
+```
+
+#### Méthodes disponibles
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `toLowercase(): self` | Convertit en minuscules | `$strings->toLowercase()` |
+| `toUppercase(): self` | Convertit en majuscules | `$strings->toUppercase()` |
+| `containsSubstring(string): self` | Filtre par sous-chaîne | `$strings->containsSubstring('ell')` |
+| `startsWith(string): self` | Filtre par préfixe | `$strings->startsWith('he')` |
+| `endsWith(string): self` | Filtre par suffixe | `$strings->endsWith('lo')` |
+| `filterEmpty(): self` | Supprime les chaînes vides | `$strings->filterEmpty()` |
+| `trim(string): self` | Supprime les espaces | `$strings->trim()` |
+| `truncate(int, string): self` | Limite la longueur | `$strings->truncate(5, '...')` |
+| `matchingRegex(string): self` | Filtre par regex | `$strings->matchingRegex('/^\d+$/')` |
+| `join(string): string` | Joint toutes les chaînes | `$strings->join(', ')` |
+| `lengths(): TypedCollection<int>` | Longueurs des chaînes | `$strings->lengths()` |
+| `pad(int, string, int): self` | Padde les chaînes | `$strings->pad(10, '-')` |
+| `replace(string|array, string|array): self` | Remplace des valeurs | `$strings->replace('hello', 'hi')` |
+| `firstCharacter(): self` | Premier caractère | `$strings->firstCharacter()` |
+| `lastCharacter(): self` | Dernier caractère | `$strings->lastCharacter()` |
+| `substring(int, ?int): self` | Extrait une sous-chaîne | `$strings->substring(0, 3)` |
+| `countMatchingRegex(string): int` | Compte les regex | `$strings->countMatchingRegex('/\d/')` |
+| `hasMatchingRegex(string): bool` | Vérifie si match | `$strings->hasMatchingRegex('/\d/')` |
+| `uniqueCaseInsensitive(): self` | Valeurs uniques (insensible) | `$strings->uniqueCaseInsensitive()` |
+| `sortCaseInsensitive(bool): self` | Tri insensible | `$strings->sortCaseInsensitive()` |
+| `removeWhitespace(): self` | Supprime les espaces | `$strings->removeWhitespace()` |
+| `slugify(): self` | Convertit en slug URL | `$strings->slugify()` |
+| `wrap(string, ?string): self` | Encadre les chaînes | `$strings->wrap('[', ']')` |
+| `removePrefix(string): self` | Supprime un préfixe | `$strings->removePrefix('pre_')` |
+| `removeSuffix(string): self` | Supprime un suffixe | `$strings->removeSuffix('_suf')` |
+
+#### Exemples d'utilisation
+
+```php
+$strings = new StringTypedCollection();
+$strings->add('Hello World!', '  PHP 8  ', 'test@example.com');
+
+// Transformations
+$lowercase = $strings->toLowercase(); // ['hello world!', '  php 8  ', 'test@example.com']
+$trimmed = $strings->trim(); // ['Hello World!', 'PHP 8', 'test@example.com']
+$slugified = $strings->slugify(); // ['hello-world', 'php-8', 'test-example-com']
+
+// Filtrage
+$emails = $strings->matchingRegex('/^[^@]+@[^@]+\.[^@]+$/'); // ['test@example.com']
+$startsHello = $strings->startsWith('Hello'); // ['Hello World!']
+
+// Manipulation
+$wrapped = $strings->wrap('**'); // ['**Hello World!**', '**  PHP 8  **', '**test@example.com**']
+$joined = $strings->join(', '); // 'Hello World!,   PHP 8  , test@example.com'
+
+// Suppression de suffixe
+$withSuffix = new StringTypedCollection();
+$withSuffix->add('user_suffix', 'admin_suffix');
+$withoutSuffix = $withSuffix->removeSuffix('_suffix'); // ['user', 'admin']
+```
+
+### IntTypedCollection
+
+Collection spécialisée pour les entiers.
+
+```php
 use AndyDefer\Records\Collections\Utility\IntTypedCollection;
-use AndyDefer\Records\Collections\Utility\BoolTypedCollection;
-
-final class UserRecord extends AbstractRecord
-{
-    public function __construct(
-        public readonly string $name,
-        public readonly StringTypedCollection $tags = new StringTypedCollection(),
-        public readonly IntTypedCollection $counts = new IntTypedCollection(),
-        public readonly BoolTypedCollection $flags = new BoolTypedCollection(),
-    ) {}
-}
-
-// Utilisation des méthodes spécifiques
-$tags = new StringTypedCollection();
-$tags->add('HELLO', 'WORLD');
-$lower = $tags->toLowercase(); // ['hello', 'world']
 
 $numbers = new IntTypedCollection();
-$numbers->add(1, 2, 3, 4, 5);
-$even = $numbers->even(); // [2, 4]
-$median = $numbers->median(); // 3.0
+$numbers->add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+```
+
+#### Méthodes disponibles
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `even(): self` | Nombres pairs | `$numbers->even()` → `[2, 4, 6, 8, 10]` |
+| `odd(): self` | Nombres impairs | `$numbers->odd()` → `[1, 3, 5, 7, 9]` |
+| `zero(): self` | Zéros | `$numbers->zero()` |
+| `nonNegative(): self` | Non négatifs | `$numbers->nonNegative()` |
+| `median(): float` | Médiane | `$numbers->median()` → `5.5` |
+
+#### Exemples d'utilisation
+
+```php
+$numbers = new IntTypedCollection();
+$numbers->add(10, 23, 5, 8, 15, 42, 7);
+
+$evenNumbers = $numbers->even(); // [10, 8, 42]
+$oddNumbers = $numbers->odd(); // [23, 5, 15, 7]
+$median = $numbers->median(); // 10.0 (après tri: [5,7,8,10,15,23,42])
+$positive = $numbers->nonNegative(); // Tous les nombres (aucun négatif)
+```
+
+### FloatTypedCollection
+
+Collection spécialisée pour les nombres décimaux.
+
+```php
+use AndyDefer\Records\Collections\Utility\FloatTypedCollection;
+
+$floats = new FloatTypedCollection();
+$floats->add(1.234, 2.567, 3.891);
+```
+
+#### Méthodes disponibles
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `round(int): self` | Arrondit à une précision | `$floats->round(2)` → `[1.23, 2.57, 3.89]` |
+| `ceil(): self` | Entier supérieur | `$floats->ceil()` → `[2.0, 3.0, 4.0]` |
+| `floor(): self` | Entier inférieur | `$floats->floor()` → `[1.0, 2.0, 3.0]` |
+| `format(int): self` | Arrondit (alias de round) | `$floats->format(1)` → `[1.2, 2.6, 3.9]` |
+
+### BoolTypedCollection
+
+Collection spécialisée pour les booléens.
+
+```php
+use AndyDefer\Records\Collections\Utility\BoolTypedCollection;
 
 $bools = new BoolTypedCollection();
-$bools->add(true, false, true);
-$trueCount = $bools->countTrue(); // 2
+$bools->add(true, false, true, false, true);
+```
+
+#### Méthodes disponibles
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `trueOnly(): self` | Uniquement `true` | `$bools->trueOnly()` → `[true, true, true]` |
+| `falseOnly(): self` | Uniquement `false` | `$bools->falseOnly()` → `[false, false]` |
+| `countTrue(): int` | Nombre de `true` | `$bools->countTrue()` → `3` |
+| `countFalse(): int` | Nombre de `false` | `$bools->countFalse()` → `2` |
+| `allTrue(): bool` | Tous `true` ? | `$bools->allTrue()` → `false` |
+| `allFalse(): bool` | Tous `false` ? | `$bools->allFalse()` → `false` |
+| `anyTrue(): bool` | Au moins un `true` ? | `$bools->anyTrue()` → `true` |
+| `anyFalse(): bool` | Au moins un `false` ? | `$bools->anyFalse()` → `true` |
+
+### NumberTypedCollection
+
+Collection pour les nombres mixtes (int + float).
+
+```php
+use AndyDefer\Records\Collections\Utility\NumberTypedCollection;
+
+$numbers = new NumberTypedCollection();
+$numbers->add(1, 2.5, 3, 4.7, 5);
+```
+
+#### Méthodes disponibles
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `positive(): self` | Nombres positifs (> 0) | Hérité de `AbstractNumberTypedCollection` |
+| `negative(): self` | Nombres négatifs (< 0) | Hérité de `AbstractNumberTypedCollection` |
+| `between(int\|float, int\|float): self` | Intervalle | Hérité de `AbstractNumberTypedCollection` |
+| `average(): float` | Moyenne | Hérité de `AbstractNumberTypedCollection` |
+| `zero(): self` | Zéros (0 ou 0.0) | `$numbers->zero()` |
+| `nonNegative(): self` | Non négatifs (>= 0) | `$numbers->nonNegative()` |
+| `areAllIntegers(): bool` | Tous entiers ? | `$numbers->areAllIntegers()` → `false` |
+| `hasAnyFloat(): bool` | Au moins un float ? | `$numbers->hasAnyFloat()` → `true` |
+| `toFloats(): FloatTypedCollection` | Convertit en floats | `$numbers->toFloats()` → `[1.0, 2.5, 3.0, 4.7, 5.0]` |
+| `toIntegers(): IntTypedCollection` | Convertit en ints | `$numbers->toIntegers()` → `[1, 2, 3, 4, 5]` |
+| `separateTypes(): array` | Sépare ints et floats | `$numbers->separateTypes()` |
+
+#### Exemples d'utilisation
+
+```php
+$numbers = new NumberTypedCollection();
+$numbers->add(5, 3.14, 0, -2, 7.5, 0.0);
+
+$positive = $numbers->positive(); // [5, 3.14, 7.5]
+$zero = $numbers->zero(); // [0, 0.0]
+$nonNegative = $numbers->nonNegative(); // [5, 3.14, 0, 7.5, 0.0]
+
+$allInts = $numbers->areAllIntegers(); // false
+$hasFloat = $numbers->hasAnyFloat(); // true
+
+$floats = $numbers->toFloats(); // FloatTypedCollection avec [5.0, 3.14, 0.0, -2.0, 7.5, 0.0]
+$ints = $numbers->toIntegers(); // IntTypedCollection avec [5, 3, 0, -2, 7, 0]
+
+$separated = $numbers->separateTypes();
+$integers = $separated['integers']; // IntTypedCollection avec [5, 0, -2, 0]
+$floatValues = $separated['floats']; // FloatTypedCollection avec [3.14, 7.5]
+```
+
+### AbstractNumberTypedCollection
+
+Classe de base pour les collections numériques.
+
+```php
+use AndyDefer\Records\Collections\Utility\AbstractNumberTypedCollection;
+
+// Méthodes disponibles dans IntTypedCollection, FloatTypedCollection et NumberTypedCollection
+```
+
+#### Méthodes statiques
+
+| Méthode | Description | Exemple |
+|---------|-------------|---------|
+| `range(start, end, step): static` | Génère une séquence | `IntTypedCollection::range(1, 10, 2)` → `[1, 3, 5, 7, 9]` |
+
+```php
+// Génération de séquences
+$evenNumbers = IntTypedCollection::range(2, 20, 2); // [2, 4, 6, ..., 20]
+$descending = IntTypedCollection::range(10, 1, -1); // [10, 9, 8, ..., 1]
+$floats = FloatTypedCollection::range(0, 1, 0.25); // [0, 0.25, 0.5, 0.75, 1.0]
 ```
 
 ### Création de collections personnalisées
@@ -472,19 +645,25 @@ final class ProductCollection extends TypedCollection
     {
         return $this->filter(fn($product) => $product->category === $category);
     }
+    
+    public function getFeatured(): self
+    {
+        return $this->filter(fn($product) => $product->isFeatured === true);
+    }
 }
 
 // Utilisation
 $products = new ProductCollection();
 $products->add(
-    new ProductRecord(name: 'Laptop', price: 999, stock: 5, category: 'electronics'),
-    new ProductRecord(name: 'Mouse', price: 29, stock: 0, category: 'electronics'),
-    new ProductRecord(name: 'Book', price: 19, stock: 10, category: 'books'),
+    new ProductRecord(name: 'Laptop', price: 999, stock: 5, category: 'electronics', isFeatured: true),
+    new ProductRecord(name: 'Mouse', price: 29, stock: 0, category: 'electronics', isFeatured: false),
+    new ProductRecord(name: 'Book', price: 19, stock: 10, category: 'books', isFeatured: true),
 );
 
 $totalValue = $products->getTotalPrice();  // 1047
 $availableProducts = $products->getInStock();  // Laptop et Book
 $electronics = $products->filterByCategory('electronics');  // Laptop et Mouse
+$featured = $products->getFeatured(); // Laptop et Book
 ```
 
 ---
@@ -650,6 +829,20 @@ public readonly UserRecord $user;           // Un utilisateur
 public readonly TypedCollection $users;     // Plusieurs utilisateurs
 ```
 
+### 8. Utiliser `every()` et `some()` pour les validations
+
+```php
+// Vérifier que tous les produits sont en stock
+if ($products->every(fn($p) => $p->stock > 0)) {
+    // Tous disponibles
+}
+
+// Vérifier qu'au moins un produit est en promotion
+if ($products->some(fn($p) => $p->isOnSale)) {
+    // Appliquer réduction
+}
+```
+
 ---
 
 ## Exemples complets
@@ -803,7 +996,47 @@ final class OrderService
     {
         return $order->items->map(fn($item) => $item->productName);
     }
+    
+    public function validateOrder(OrderRecord $order): bool
+    {
+        return $order->items->every(fn($item) => $item->quantity > 0)
+            && $order->items->some(fn($item) => $item->price > 0);
+    }
 }
+```
+
+### Utilisation avancée des StringTypedCollection
+
+```php
+final class ContentService
+{
+    public function processContent(StringTypedCollection $strings): array
+    {
+        return $strings
+            ->trim()
+            ->filterEmpty()
+            ->toLowercase()
+            ->uniqueCaseInsensitive()
+            ->slugify()
+            ->wrap('**')
+            ->join("\n");
+    }
+    
+    public function extractEmails(StringTypedCollection $content): StringTypedCollection
+    {
+        return $content->matchingRegex('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/');
+    }
+}
+
+// Utilisation
+$content = new StringTypedCollection();
+$content->add('  Hello World!  ', '', '  PHP 8  ', 'Contact: john@example.com', 'HELLO WORLD');
+
+$processed = $contentService->processContent($content);
+// Retourne: "**hello-world**\n**php-8**\n**contact-john-example-com**"
+
+$emails = $contentService->extractEmails($content);
+// Retourne: ['john@example.com']
 ```
 
 ---
@@ -823,7 +1056,6 @@ final class OrderService
 | Méthode | Retour | Description |
 |---------|--------|-------------|
 | `add(...$items)` | `self` | Ajoute des éléments |
-| `all()` | `array` | Tous les éléments |
 | `toArray()` | `array` | Tous les éléments |
 | `count()` | `int` | Nombre d'éléments |
 | `isEmpty()` | `bool` | Collection vide ? |
@@ -833,11 +1065,13 @@ final class OrderService
 | `first(int $limit)` | `self` | N premiers éléments |
 | `lastItem()` | `mixed|null` | Dernier élément |
 | `last(int $limit)` | `self` | N derniers éléments |
+| `every(Closure)` | `bool` | Tous satisfont ? |
+| `some(Closure)` | `bool` | Un satisfait ? |
 | `map(Closure)` | `self` | Transforme chaque élément |
 | `filter(Closure)` | `self` | Filtre les éléments |
 | `reject(Closure)` | `self` | Rejette les éléments |
 | `each(Closure)` | `self` | Exécute une action |
-| `sort()` | `self` | Trie les éléments |
+| `sort(int)` | `self` | Trie les éléments |
 | `sortBy(Closure\|string, bool)` | `self` | Trie par clé/fonction |
 | `reverse()` | `self` | Inverse l'ordre |
 | `shuffle()` | `self` | Mélange aléatoirement |
@@ -882,58 +1116,91 @@ final class OrderService
 
 ### StringTypedCollection
 
-| Méthode | Description |
-|---------|-------------|
-| `toLowercase(): self` | Convertit en minuscules |
-| `toUppercase(): self` | Convertit en majuscules |
-| `containsSubstring(string): self` | Filtre par sous-chaîne |
-| `startsWith(string): self` | Filtre par préfixe |
-| `endsWith(string): self` | Filtre par suffixe |
-| `filterEmpty(): self` | Supprime les chaînes vides |
-| `trim(): self` | Supprime les espaces |
-| `truncate(int, string): self` | Limite la longueur |
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `toLowercase()` | `self` | Convertit en minuscules |
+| `toUppercase()` | `self` | Convertit en majuscules |
+| `containsSubstring(string)` | `self` | Filtre par sous-chaîne |
+| `startsWith(string)` | `self` | Filtre par préfixe |
+| `endsWith(string)` | `self` | Filtre par suffixe |
+| `filterEmpty()` | `self` | Supprime les chaînes vides |
+| `trim(string)` | `self` | Supprime les espaces |
+| `truncate(int, string)` | `self` | Limite la longueur |
+| `matchingRegex(string)` | `self` | Filtre par regex |
+| `join(string)` | `string` | Joint toutes les chaînes |
+| `lengths()` | `TypedCollection<int>` | Longueurs des chaînes |
+| `pad(int, string, int)` | `self` | Padde les chaînes |
+| `replace(string\|array, string\|array)` | `self` | Remplace des valeurs |
+| `firstCharacter()` | `self` | Premier caractère |
+| `lastCharacter()` | `self` | Dernier caractère |
+| `substring(int, ?int)` | `self` | Extrait une sous-chaîne |
+| `countMatchingRegex(string)` | `int` | Compte les regex |
+| `hasMatchingRegex(string)` | `bool` | Vérifie si match |
+| `uniqueCaseInsensitive()` | `self` | Valeurs uniques (insensible) |
+| `sortCaseInsensitive(bool)` | `self` | Tri insensible à la casse |
+| `removeWhitespace()` | `self` | Supprime les espaces |
+| `slugify()` | `self` | Convertit en slug URL |
+| `wrap(string, ?string)` | `self` | Encadre les chaînes |
+| `removePrefix(string)` | `self` | Supprime un préfixe |
+| `removeSuffix(string)` | `self` | Supprime un suffixe |
 
 ### IntTypedCollection
 
-| Méthode | Description |
-|---------|-------------|
-| `even(): self` | Nombres pairs |
-| `odd(): self` | Nombres impairs |
-| `median(): float` | Médiane |
-| `zero(): self` | Zéro |
-| `nonNegative(): self` | Non négatifs |
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `even()` | `self` | Nombres pairs |
+| `odd()` | `self` | Nombres impairs |
+| `median()` | `float` | Médiane |
+| `zero()` | `self` | Zéros |
+| `nonNegative()` | `self` | Non négatifs |
 
 ### FloatTypedCollection
 
-| Méthode | Description |
-|---------|-------------|
-| `round(int): self` | Arrondit |
-| `ceil(): self` | Entier supérieur |
-| `floor(): self` | Entier inférieur |
-| `format(int): self` | Arrondit |
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `round(int)` | `self` | Arrondit à une précision |
+| `ceil()` | `self` | Entier supérieur |
+| `floor()` | `self` | Entier inférieur |
+| `format(int)` | `self` | Arrondit (alias) |
 
 ### BoolTypedCollection
 
-| Méthode | Description |
-|---------|-------------|
-| `trueOnly(): self` | Uniquement true |
-| `falseOnly(): self` | Uniquement false |
-| `countTrue(): int` | Nombre de true |
-| `countFalse(): int` | Nombre de false |
-| `allTrue(): bool` | Tous true ? |
-| `allFalse(): bool` | Tous false ? |
-| `anyTrue(): bool` | Au moins un true ? |
-| `anyFalse(): bool` | Au moins un false ? |
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `trueOnly()` | `self` | Uniquement `true` |
+| `falseOnly()` | `self` | Uniquement `false` |
+| `countTrue()` | `int` | Nombre de `true` |
+| `countFalse()` | `int` | Nombre de `false` |
+| `allTrue()` | `bool` | Tous `true` ? |
+| `allFalse()` | `bool` | Tous `false` ? |
+| `anyTrue()` | `bool` | Au moins un `true` ? |
+| `anyFalse()` | `bool` | Au moins un `false` ? |
+
+### NumberTypedCollection
+
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `positive()` | `self` | Nombres positifs (> 0) |
+| `negative()` | `self` | Nombres négatifs (< 0) |
+| `between(int\|float, int\|float)` | `self` | Intervalle |
+| `average()` | `float` | Moyenne |
+| `zero()` | `self` | Zéros (0 ou 0.0) |
+| `nonNegative()` | `self` | Non négatifs (>= 0) |
+| `areAllIntegers()` | `bool` | Tous entiers ? |
+| `hasAnyFloat()` | `bool` | Au moins un float ? |
+| `toFloats()` | `FloatTypedCollection` | Convertit en floats |
+| `toIntegers()` | `IntTypedCollection` | Convertit en ints |
+| `separateTypes()` | `array` | Sépare ints et floats |
 
 ### AbstractNumberTypedCollection
 
-| Méthode | Description |
-|---------|-------------|
-| `positive(): self` | Nombres positifs (> 0) |
-| `negative(): self` | Nombres négatifs (< 0) |
-| `between(int\|float, int\|float): self` | Intervalle |
-| `average(): float` | Moyenne |
-| `range(start, end, step): static` | Génère une séquence |
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `positive()` | `self` | Nombres positifs (> 0) |
+| `negative()` | `self` | Nombres négatifs (< 0) |
+| `between(int\|float, int\|float)` | `self` | Intervalle |
+| `average()` | `float` | Moyenne |
+| `range(start, end, step)` | `static` | Génère une séquence |
 
 ---
 
