@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AndyDefer\Records\Records;
+namespace AndyDefer\Records;
 
 use AndyDefer\Records\AbstractRecord;
 
