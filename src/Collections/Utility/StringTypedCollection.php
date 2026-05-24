@@ -35,7 +35,7 @@ final class StringTypedCollection extends TypedCollection
      */
     public function toLowercase(): self
     {
-        return $this->map(fn($item): string => strtolower($item));
+        return $this->map(fn ($item): string => strtolower($item));
     }
 
     /**
@@ -45,43 +45,40 @@ final class StringTypedCollection extends TypedCollection
      */
     public function toUppercase(): self
     {
-        return $this->map(fn($item): string => strtoupper($item));
+        return $this->map(fn ($item): string => strtoupper($item));
     }
 
     /**
      * Filter strings that contain a specific substring.
      *
-     * @param string $search Substring to search for
-     *
+     * @param  string  $search  Substring to search for
      * @return self New collection containing only strings that contain the substring
      */
     public function containsSubstring(string $search): self
     {
-        return $this->filter(fn($item): bool => str_contains($item, $search));
+        return $this->filter(fn ($item): bool => str_contains($item, $search));
     }
 
     /**
      * Filter strings that start with a specific prefix.
      *
-     * @param string $prefix Prefix to check at the beginning of each string
-     *
+     * @param  string  $prefix  Prefix to check at the beginning of each string
      * @return self New collection containing only strings that start with the prefix
      */
     public function startsWith(string $prefix): self
     {
-        return $this->filter(fn($item): bool => str_starts_with($item, $prefix));
+        return $this->filter(fn ($item): bool => str_starts_with($item, $prefix));
     }
 
     /**
      * Filter strings that end with a specific suffix.
      *
-     * @param string $suffix Suffix to check at the end of each string
-     *
+     * @param  string  $suffix  Suffix to check at the end of each string
      * @return self New collection containing only strings that end with the suffix
      */
     public function endsWith(string $suffix): self
     {
-        return $this->filter(fn($item): bool => str_ends_with($item, $suffix));
+        return $this->filter(fn ($item): bool => str_ends_with($item, $suffix));
     }
 
     /**
@@ -94,19 +91,18 @@ final class StringTypedCollection extends TypedCollection
      */
     public function filterEmpty(): self
     {
-        return $this->filter(fn($item): bool => $item !== '');
+        return $this->filter(fn ($item): bool => $item !== '');
     }
 
     /**
      * Trim whitespace (or other characters) from the beginning and end of each string.
      *
-     * @param string $characters Optional characters to trim (default: whitespace)
-     *
+     * @param  string  $characters  Optional characters to trim (default: whitespace)
      * @return self New collection with trimmed strings
      */
     public function trim(string $characters = " \n\r\t\v\0"): self
     {
-        return $this->map(fn($item): string => trim($item, $characters));
+        return $this->map(fn ($item): string => trim($item, $characters));
     }
 
     /**
@@ -115,9 +111,8 @@ final class StringTypedCollection extends TypedCollection
      * If a string exceeds the maximum length, it is cut and the suffix is appended.
      * Strings shorter than the limit remain unchanged.
      *
-     * @param int    $length Maximum length of the resulting string
-     * @param string $suffix Suffix to append to truncated strings (default: '...')
-     *
+     * @param  int  $length  Maximum length of the resulting string
+     * @param  string  $suffix  Suffix to append to truncated strings (default: '...')
      * @return self New collection with truncated strings
      */
     public function truncate(int $length, string $suffix = '...'): self
@@ -127,15 +122,14 @@ final class StringTypedCollection extends TypedCollection
                 return $item;
             }
 
-            return substr($item, 0, $length) . $suffix;
+            return substr($item, 0, $length).$suffix;
         });
     }
 
     /**
      * Filter strings matching a regular expression pattern.
      *
-     * @param string $pattern Regular expression pattern to match (PCRE format)
-     *
+     * @param  string  $pattern  Regular expression pattern to match (PCRE format)
      * @return self New collection containing only strings matching the pattern
      *
      * @throws \InvalidArgumentException If the pattern is invalid
@@ -147,14 +141,13 @@ final class StringTypedCollection extends TypedCollection
             throw new \InvalidArgumentException(sprintf('Invalid regular expression pattern: "%s"', $pattern));
         }
 
-        return $this->filter(fn($item): bool => preg_match($pattern, $item) === 1);
+        return $this->filter(fn ($item): bool => preg_match($pattern, $item) === 1);
     }
 
     /**
      * Join all strings with a separator.
      *
-     * @param string $separator Separator between strings (default: empty string)
-     *
+     * @param  string  $separator  Separator between strings (default: empty string)
      * @return string Combined string with all items joined
      */
     public function join(string $separator = ''): string
@@ -181,28 +174,26 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Pad each string to a certain length.
      *
-     * @param int    $length    Length to pad to
-     * @param string $padString String to use for padding (default: space)
-     * @param int    $padType   Type of padding (STR_PAD_RIGHT, STR_PAD_LEFT, STR_PAD_BOTH)
-     *
+     * @param  int  $length  Length to pad to
+     * @param  string  $padString  String to use for padding (default: space)
+     * @param  int  $padType  Type of padding (STR_PAD_RIGHT, STR_PAD_LEFT, STR_PAD_BOTH)
      * @return self New collection with padded strings
      */
     public function pad(int $length, string $padString = ' ', int $padType = STR_PAD_RIGHT): self
     {
-        return $this->map(fn($item): string => str_pad($item, $length, $padString, $padType));
+        return $this->map(fn ($item): string => str_pad($item, $length, $padString, $padType));
     }
 
     /**
      * Replace all occurrences of a search string with a replacement.
      *
-     * @param string|array<string> $search  Value(s) to search for
-     * @param string|array<string> $replace Value(s) to replace with
-     *
+     * @param  string|array<string>  $search  Value(s) to search for
+     * @param  string|array<string>  $replace  Value(s) to replace with
      * @return self New collection with replaced strings
      */
     public function replace(string|array $search, string|array $replace): self
     {
-        return $this->map(fn($item): string => str_replace($search, $replace, $item));
+        return $this->map(fn ($item): string => str_replace($search, $replace, $item));
     }
 
     /**
@@ -212,7 +203,7 @@ final class StringTypedCollection extends TypedCollection
      */
     public function firstCharacter(): self
     {
-        return $this->map(fn($item): string => substr($item, 0, 1));
+        return $this->map(fn ($item): string => substr($item, 0, 1));
     }
 
     /**
@@ -222,15 +213,14 @@ final class StringTypedCollection extends TypedCollection
      */
     public function lastCharacter(): self
     {
-        return $this->map(fn($item): string => substr($item, -1));
+        return $this->map(fn ($item): string => substr($item, -1));
     }
 
     /**
      * Extract a substring from each string.
      *
-     * @param int      $offset Starting position (negative for counting from end)
-     * @param int|null $length Maximum length of the substring (null for rest of string)
-     *
+     * @param  int  $offset  Starting position (negative for counting from end)
+     * @param  int|null  $length  Maximum length of the substring (null for rest of string)
      * @return self New collection with extracted substrings
      */
     public function substring(int $offset, ?int $length = null): self
@@ -247,8 +237,7 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Count how many strings match a regular expression pattern.
      *
-     * @param string $pattern Regular expression pattern to match
-     *
+     * @param  string  $pattern  Regular expression pattern to match
      * @return int Number of strings matching the pattern
      */
     public function countMatchingRegex(string $pattern): int
@@ -259,8 +248,7 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Check if any string matches a regular expression pattern.
      *
-     * @param string $pattern Regular expression pattern to match
-     *
+     * @param  string  $pattern  Regular expression pattern to match
      * @return bool True if at least one string matches the pattern
      */
     public function hasMatchingRegex(string $pattern): bool
@@ -276,11 +264,11 @@ final class StringTypedCollection extends TypedCollection
     public function uniqueCaseInsensitive(): self
     {
         $seen = [];
-        $result = new static();
+        $result = new self;
 
         foreach ($this->toArray() as $item) {
             $lowercase = strtolower($item);
-            if (!in_array($lowercase, $seen, true)) {
+            if (! in_array($lowercase, $seen, true)) {
                 $seen[] = $lowercase;
                 $result->add($item);
             }
@@ -292,8 +280,7 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Sort strings case-insensitively with deterministic order.
      *
-     * @param bool $descending Whether to sort in descending order
-     *
+     * @param  bool  $descending  Whether to sort in descending order
      * @return self New collection with case-insensitive sort
      */
     public function sortCaseInsensitive(bool $descending = false): self
@@ -316,7 +303,7 @@ final class StringTypedCollection extends TypedCollection
             $items = array_reverse($items);
         }
 
-        $result = new static();
+        $result = new self;
         $result->add(...$items);
 
         return $result;
@@ -329,7 +316,7 @@ final class StringTypedCollection extends TypedCollection
      */
     public function removeWhitespace(): self
     {
-        return $this->map(fn($item): string => preg_replace('/\s+/', '', $item));
+        return $this->map(fn ($item): string => preg_replace('/\s+/', '', $item));
     }
 
     /**
@@ -357,23 +344,21 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Wrap each string with a prefix and suffix.
      *
-     * @param string $prefix String to add at the beginning
-     * @param string $suffix String to add at the end (defaults to prefix if not provided)
-     *
+     * @param  string  $prefix  String to add at the beginning
+     * @param  string  $suffix  String to add at the end (defaults to prefix if not provided)
      * @return self New collection with wrapped strings
      */
     public function wrap(string $prefix, ?string $suffix = null): self
     {
         $suffix = $suffix ?? $prefix;
 
-        return $this->map(fn($item): string => $prefix . $item . $suffix);
+        return $this->map(fn ($item): string => $prefix.$item.$suffix);
     }
 
     /**
      * Remove a prefix from each string if it exists.
      *
-     * @param string $prefix Prefix to remove
-     *
+     * @param  string  $prefix  Prefix to remove
      * @return self New collection with prefix removed
      */
     public function removePrefix(string $prefix): self
@@ -390,8 +375,7 @@ final class StringTypedCollection extends TypedCollection
     /**
      * Remove a suffix from each string if it exists.
      *
-     * @param string $suffix Suffix to remove
-     *
+     * @param  string  $suffix  Suffix to remove
      * @return self New collection with suffix removed
      */
     public function removeSuffix(string $suffix): self

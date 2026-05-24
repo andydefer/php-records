@@ -33,7 +33,7 @@ final class IntTypedCollection extends AbstractNumberTypedCollection
      */
     public function zero(): self
     {
-        return $this->filter(fn($item): bool => $item === 0);
+        return $this->filter(fn ($item): bool => $item === 0);
     }
 
     /**
@@ -45,7 +45,7 @@ final class IntTypedCollection extends AbstractNumberTypedCollection
      */
     public function nonNegative(): self
     {
-        return $this->filter(fn($item): bool => $item >= 0);
+        return $this->filter(fn ($item): bool => $item >= 0);
     }
 
     /**
@@ -57,7 +57,7 @@ final class IntTypedCollection extends AbstractNumberTypedCollection
      */
     public function even(): self
     {
-        return $this->filter(fn($item): bool => $item % 2 === 0);
+        return $this->filter(fn ($item): bool => $item % 2 === 0);
     }
 
     /**
@@ -69,7 +69,7 @@ final class IntTypedCollection extends AbstractNumberTypedCollection
      */
     public function odd(): self
     {
-        return $this->filter(fn($item): bool => $item % 2 !== 0);
+        return $this->filter(fn ($item): bool => $item % 2 !== 0);
     }
 
     /**

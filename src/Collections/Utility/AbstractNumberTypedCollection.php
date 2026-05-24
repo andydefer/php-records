@@ -15,6 +15,7 @@ use InvalidArgumentException;
  * validated against the numeric type at construction time.
  *
  * @template TValue of int|float
+ *
  * @extends TypedCollection<TValue>
  */
 abstract class AbstractNumberTypedCollection extends TypedCollection
@@ -26,7 +27,7 @@ abstract class AbstractNumberTypedCollection extends TypedCollection
      */
     public function positive(): static
     {
-        return $this->filter(fn($item): bool => $item > 0);
+        return $this->filter(fn ($item): bool => $item > 0);
     }
 
     /**
@@ -36,15 +37,14 @@ abstract class AbstractNumberTypedCollection extends TypedCollection
      */
     public function negative(): static
     {
-        return $this->filter(fn($item): bool => $item < 0);
+        return $this->filter(fn ($item): bool => $item < 0);
     }
 
     /**
      * Filter the collection to keep numbers within a specified inclusive range.
      *
-     * @param TValue $min Minimum value (inclusive)
-     * @param TValue $max Maximum value (inclusive)
-     *
+     * @param  TValue  $min  Minimum value (inclusive)
+     * @param  TValue  $max  Maximum value (inclusive)
      * @return static<TValue> New collection containing numbers in the range
      *
      * @throws InvalidArgumentException If min is greater than max
@@ -57,7 +57,7 @@ abstract class AbstractNumberTypedCollection extends TypedCollection
             );
         }
 
-        return $this->filter(fn($item): bool => $item >= $min && $item <= $max);
+        return $this->filter(fn ($item): bool => $item >= $min && $item <= $max);
     }
 
     /**
@@ -85,10 +85,9 @@ abstract class AbstractNumberTypedCollection extends TypedCollection
      * to `$end`, incrementing by `$step`. The direction of iteration is
      * automatically determined based on the start/end values and step sign.
      *
-     * @param TValue $start First value in the sequence
-     * @param TValue $end Last value in the sequence (inclusive)
-     * @param TValue $step Increment between each value (cannot be zero)
-     *
+     * @param  TValue  $start  First value in the sequence
+     * @param  TValue  $end  Last value in the sequence (inclusive)
+     * @param  TValue  $step  Increment between each value (cannot be zero)
      * @return static<TValue> Collection containing the generated sequence
      *
      * @throws InvalidArgumentException If step is zero
@@ -99,7 +98,7 @@ abstract class AbstractNumberTypedCollection extends TypedCollection
             throw new InvalidArgumentException('Step value cannot be zero');
         }
 
-        $collection = new static();
+        $collection = new static;
 
         // Positive step: iterate upward
         if ($start <= $end && $step > 0) {

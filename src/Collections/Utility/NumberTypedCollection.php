@@ -39,7 +39,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function zero(): self
     {
-        return $this->filter(fn($item): bool => $item === 0 || $item === 0.0);
+        return $this->filter(fn ($item): bool => $item === 0 || $item === 0.0);
     }
 
     /**
@@ -52,7 +52,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function nonNegative(): self
     {
-        return $this->filter(fn($item): bool => $item >= 0);
+        return $this->filter(fn ($item): bool => $item >= 0);
     }
 
     /**
@@ -62,7 +62,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function areAllIntegers(): bool
     {
-        return $this->every(fn($item): bool => is_int($item));
+        return $this->every(fn ($item): bool => is_int($item));
     }
 
     /**
@@ -72,7 +72,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function hasAnyFloat(): bool
     {
-        return $this->some(fn($item): bool => is_float($item));
+        return $this->some(fn ($item): bool => is_float($item));
     }
 
     /**
@@ -84,7 +84,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function toFloats(): FloatTypedCollection
     {
-        $collection = new FloatTypedCollection();
+        $collection = new FloatTypedCollection;
 
         foreach ($this->toArray() as $item) {
             $collection->add((float) $item);
@@ -103,7 +103,7 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function toIntegers(): IntTypedCollection
     {
-        $collection = new IntTypedCollection();
+        $collection = new IntTypedCollection;
 
         foreach ($this->toArray() as $item) {
             $collection->add((int) $item);
@@ -119,8 +119,8 @@ final class NumberTypedCollection extends AbstractNumberTypedCollection
      */
     public function separateTypes(): array
     {
-        $integers = new IntTypedCollection();
-        $floats = new FloatTypedCollection();
+        $integers = new IntTypedCollection;
+        $floats = new FloatTypedCollection;
 
         foreach ($this->toArray() as $item) {
             if (is_int($item)) {

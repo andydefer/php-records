@@ -1,6 +1,6 @@
 # Documentation
 docs/
-#prompts/
+prompts/
 all.md
 all.txt
 Makefile

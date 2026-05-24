@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace AndyDefer\Records;
 
-use AndyDefer\Records\AbstractRecord;
-
 /**
  * Empty record for optional filter parameters.
  *

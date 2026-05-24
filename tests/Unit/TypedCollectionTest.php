@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace AndyDefer\Records\Tests\Unit\Collections;
 
-use AndyDefer\Records\Collections\TypedCollection;
 use AndyDefer\Records\AbstractRecord;
+use AndyDefer\Records\Collections\TypedCollection;
+use AndyDefer\Records\Collections\Utility\StringTypedCollection;
 use AndyDefer\Records\Tests\Fixtures\Records\TestProductRecord;
 use AndyDefer\Records\Tests\Fixtures\Records\TestUserRecord;
 use InvalidArgumentException;
@@ -86,20 +87,17 @@ final class TypedCollectionTest extends TestCase
         $this->assertSame([TestProductRecord::class], $collection->getAllowedTypes());
     }
 
-    public function test_construct_creates_collection_with_typed_records_type(): void
+    public function test_construct_creates_collection_with_typed_collection_type(): void
     {
-        // Arrange
-        $collection = new TypedCollection(TypedCollection::class);
-        $inner = new TypedCollection('string');
+        $collection = new TypedCollection(StringTypedCollection::class);
+        $inner = new StringTypedCollection;
         $inner->add('hello', 'world');
 
-        // Act
         $collection->add($inner);
 
-        // Assert
         $this->assertCount(1, $collection->toArray());
-        $this->assertSame([TypedCollection::class], $collection->getAllowedTypes());
-        $this->assertInstanceOf(TypedCollection::class, $collection->firstItem());
+        $this->assertSame([StringTypedCollection::class], $collection->getAllowedTypes());
+        $this->assertInstanceOf(StringTypedCollection::class, $collection->firstItem());
     }
 
     public function test_construct_creates_collection_with_multiple_scalar_types(): void
@@ -251,6 +249,147 @@ final class TypedCollectionTest extends TestCase
         $collection->add('not allowed');
     }
 
+    // ========== NOUVEAUX TESTS POUR LES SOUS-CLASSES DE TYPEDCOLLECTION ==========
+
+    public function test_construct_creates_collection_with_string_typed_collection_subclass(): void
+    {
+        $collection = new TypedCollection(StringTypedCollection::class);
+        $inner = new StringTypedCollection;
+        $inner->add('hello', 'world');
+
+        $collection->add($inner);
+
+        $this->assertCount(1, $collection->toArray());
+        $this->assertSame([StringTypedCollection::class], $collection->getAllowedTypes());
+        $this->assertInstanceOf(StringTypedCollection::class, $collection->firstItem());
+    }
+
+    public function test_construct_creates_collection_with_multiple_collection_subclasses(): void
+    {
+        $collection = new TypedCollection(TypedCollection::class, StringTypedCollection::class);
+
+        $typedCollection = new TypedCollection('int');
+        $typedCollection->add(1, 2, 3);
+
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('a', 'b', 'c');
+
+        $collection->add($typedCollection, $stringCollection);
+
+        $this->assertCount(2, $collection->toArray());
+        $this->assertSame([TypedCollection::class, StringTypedCollection::class], $collection->getAllowedTypes());
+        $this->assertInstanceOf(TypedCollection::class, $collection->toArray()[0]);
+        $this->assertInstanceOf(StringTypedCollection::class, $collection->toArray()[1]);
+    }
+
+    public function test_add_accepts_typed_collection_subclass_instance(): void
+    {
+        $collection = new TypedCollection(StringTypedCollection::class);
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('test');
+
+        $collection->add($stringCollection);
+
+        $this->assertCount(1, $collection->toArray());
+        $this->assertInstanceOf(StringTypedCollection::class, $collection->firstItem());
+    }
+
+    public function test_add_throws_exception_for_wrong_collection_subclass(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/Expected type\(s\) AndyDefer\\\\Records\\\\Collections\\\\Utility\\\\StringTypedCollection, got AndyDefer\\\\Records\\\\Collections\\\\TypedCollection/');
+
+        $collection = new TypedCollection(StringTypedCollection::class);
+        $typedCollection = new TypedCollection('int');
+        $typedCollection->add(1, 2, 3);
+
+        $collection->add($typedCollection);
+    }
+
+    public function test_add_accepts_string_typed_collection(): void
+    {
+        $collection = new TypedCollection(StringTypedCollection::class);
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('hello', 'world');
+
+        $collection->add($stringCollection);
+
+        $this->assertCount(1, $collection->toArray());
+        $this->assertInstanceOf(StringTypedCollection::class, $collection->firstItem());
+        $this->assertSame(['hello', 'world'], $collection->firstItem()->toArray());
+    }
+
+    public function test_map_transforms_to_string_typed_collection(): void
+    {
+        $collection = new TypedCollection('string');
+        $collection->add('hello', 'world');
+
+        $mapped = $collection->map(function ($item) {
+            $sc = new StringTypedCollection;
+            $sc->add($item);
+
+            return $sc;
+        });
+
+        $this->assertSame([StringTypedCollection::class], $mapped->getAllowedTypes());
+        $this->assertCount(2, $mapped->toArray());
+        $this->assertInstanceOf(StringTypedCollection::class, $mapped->firstItem());
+        $this->assertSame(['hello'], $mapped->firstItem()->toArray());
+    }
+
+    public function test_of_type_returns_only_items_of_typed_collection_subclass(): void
+    {
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('test');
+
+        $typedCollection = new TypedCollection('int');
+        $typedCollection->add(1, 2, 3);
+
+        $collection = new TypedCollection(StringTypedCollection::class, TypedCollection::class);
+        $collection->add($stringCollection, $typedCollection);
+
+        $result = $collection->ofType(StringTypedCollection::class);
+
+        $this->assertSame([StringTypedCollection::class], $result->getAllowedTypes());
+        $this->assertCount(1, $result->toArray());
+        $this->assertInstanceOf(StringTypedCollection::class, $result->firstItem());
+    }
+
+    public function test_except_type_removes_items_of_typed_collection_subclass(): void
+    {
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('test');
+
+        $typedCollection = new TypedCollection('int');
+        $typedCollection->add(1, 2, 3);
+
+        $collection = new TypedCollection(StringTypedCollection::class, TypedCollection::class);
+        $collection->add($stringCollection, $typedCollection);
+
+        $result = $collection->exceptType(StringTypedCollection::class);
+
+        $this->assertSame([TypedCollection::class], $result->getAllowedTypes());
+        $this->assertCount(1, $result->toArray());
+        $this->assertInstanceOf(TypedCollection::class, $result->firstItem());
+    }
+
+    public function test_get_types_returns_distinct_collection_subclass_types(): void
+    {
+        $stringCollection = new StringTypedCollection;
+        $stringCollection->add('test');
+
+        $typedCollection = new TypedCollection('int');
+        $typedCollection->add(1, 2, 3);
+
+        $collection = new TypedCollection(StringTypedCollection::class, TypedCollection::class);
+        $collection->add($stringCollection, $typedCollection);
+
+        $result = $collection->getTypes();
+
+        $this->assertSame(['string'], $result->getAllowedTypes());
+        $this->assertEqualsCanonicalizing([StringTypedCollection::class, TypedCollection::class], $result->toArray());
+    }
+
     // ========== TESTS DE MAP ==========
 
     public function test_map_returns_new_collection_with_transformed_items(): void
@@ -260,7 +399,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $mapped = $collection->map(fn($item) => $item * 2);
+        $mapped = $collection->map(fn ($item) => $item * 2);
 
         // Assert
         $this->assertCount(3, $mapped->toArray());
@@ -276,7 +415,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $mapped = $collection->map(fn($item) => "Number: {$item}");
+        $mapped = $collection->map(fn ($item) => "Number: {$item}");
 
         // Assert
         $this->assertSame(['string'], $mapped->getAllowedTypes());
@@ -290,7 +429,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 0);
 
         // Act
-        $mapped = $collection->map(fn($item) => $item > 0);
+        $mapped = $collection->map(fn ($item) => $item > 0);
 
         // Assert
         $this->assertSame(['bool'], $mapped->getAllowedTypes());
@@ -304,7 +443,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $mapped = $collection->map(fn($item) => $item / 2.0);
+        $mapped = $collection->map(fn ($item) => $item / 2.0);
 
         // Assert
         $this->assertSame(['float'], $mapped->getAllowedTypes());
@@ -318,7 +457,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('Product A', 'Product B');
 
         // Act
-        $mapped = $collection->map(fn($item) => new TestProductRecord(name: $item));
+        $mapped = $collection->map(fn ($item) => new TestProductRecord(name: $item));
 
         // Assert
         $this->assertSame([TestProductRecord::class], $mapped->getAllowedTypes());
@@ -334,7 +473,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('hello', 'world');
 
         // Act
-        $mapped = $collection->map(fn($item) => (new TypedCollection('string'))->add($item));
+        $mapped = $collection->map(fn ($item) => (new TypedCollection('string'))->add($item));
 
         // Assert
         $this->assertSame([TypedCollection::class], $mapped->getAllowedTypes());
@@ -348,7 +487,7 @@ final class TypedCollectionTest extends TestCase
         $collection = new TypedCollection('int');
 
         // Act
-        $mapped = $collection->map(fn($item) => $item * 2);
+        $mapped = $collection->map(fn ($item) => $item * 2);
 
         // Assert
         $this->assertSame(['int'], $mapped->getAllowedTypes());
@@ -364,7 +503,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3, 4, 5);
 
         // Act
-        $filtered = $collection->filter(fn($item) => $item > 3);
+        $filtered = $collection->filter(fn ($item) => $item > 3);
 
         // Assert
         $this->assertCount(2, $filtered->toArray());
@@ -379,7 +518,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $filtered = $collection->filter(fn($item) => $item > 10);
+        $filtered = $collection->filter(fn ($item) => $item > 10);
 
         // Assert
         $this->assertEmpty($filtered->toArray());
@@ -393,7 +532,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3, 4, 5);
 
         // Act
-        $rejected = $collection->reject(fn($item) => $item > 3);
+        $rejected = $collection->reject(fn ($item) => $item > 3);
 
         // Assert
         $this->assertCount(3, $rejected->toArray());
@@ -425,7 +564,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2);
 
         // Act
-        $result = $collection->each(fn($item) => $item * 2);
+        $result = $collection->each(fn ($item) => $item * 2);
 
         // Assert
         $this->assertSame($collection, $result);
@@ -581,7 +720,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act
-        $sorted = $collection->sortBy(fn($item) => $item->name);
+        $sorted = $collection->sortBy(fn ($item) => $item->name);
 
         // Assert
         $this->assertSame('Product A', $sorted->toArray()[0]->name);
@@ -615,7 +754,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $sorted = $collection->sortBy(fn($item) => $item, true);
+        $sorted = $collection->sortBy(fn ($item) => $item, true);
 
         // Assert
         $this->assertSame([3, 2, 1], $sorted->toArray());
@@ -705,7 +844,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act
-        $result = $collection->sum(fn($item) => $item->price);
+        $result = $collection->sum(fn ($item) => $item->price);
 
         // Assert
         $this->assertSame(600, $result);
@@ -762,7 +901,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act
-        $result = $collection->avg(fn($item) => $item->price);
+        $result = $collection->avg(fn ($item) => $item->price);
 
         // Assert
         $this->assertSame(200.0, $result);
@@ -806,7 +945,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act
-        $result = $collection->max(fn($item) => $item->price);
+        $result = $collection->max(fn ($item) => $item->price);
 
         // Assert
         $this->assertSame(300, $result);
@@ -848,7 +987,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act
-        $result = $collection->min(fn($item) => $item->price);
+        $result = $collection->min(fn ($item) => $item->price);
 
         // Assert
         $this->assertSame(100, $result);
@@ -977,9 +1116,9 @@ final class TypedCollectionTest extends TestCase
         // Arrange, Act & Assert
         $result = (new TypedCollection('int'))
             ->add(5, 2, 8, 1, 3)
-            ->filter(fn($item) => $item > 2)
+            ->filter(fn ($item) => $item > 2)
             ->sort()
-            ->map(fn($item) => $item * 2)
+            ->map(fn ($item) => $item * 2)
             ->toArray();
 
         $this->assertSame([6, 10, 16], $result);
@@ -998,9 +1137,9 @@ final class TypedCollectionTest extends TestCase
 
         // Act
         $result = $collection
-            ->filter(fn($item) => $item->isFeatured === true)
+            ->filter(fn ($item) => $item->isFeatured === true)
             ->sortBy('price')
-            ->map(fn($item) => $item->name)
+            ->map(fn ($item) => $item->name)
             ->toArray();
 
         // Assert
@@ -1016,8 +1155,8 @@ final class TypedCollectionTest extends TestCase
         $original->add(1, 2, 3);
 
         // Act
-        $filtered = $original->filter(fn($item) => $item > 1);
-        $mapped = $original->map(fn($item) => $item * 2);
+        $filtered = $original->filter(fn ($item) => $item > 1);
+        $mapped = $original->map(fn ($item) => $item * 2);
         $sorted = $original->sort();
 
         // Assert
@@ -1036,7 +1175,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(new TestProductRecord(name: 'Product A'), 'just a string');
 
         // Act
-        $filtered = $collection->filter(fn($item) => $item instanceof TestProductRecord);
+        $filtered = $collection->filter(fn ($item) => $item instanceof TestProductRecord);
 
         // Assert
         $this->assertSame([TestProductRecord::class, 'string'], $filtered->getAllowedTypes());
@@ -1049,7 +1188,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(new TestProductRecord(name: 'Product A'));
 
         // Act
-        $mapped = $collection->map(fn($item) => $item->name);
+        $mapped = $collection->map(fn ($item) => $item->name);
 
         // Assert
         $this->assertSame(['string'], $mapped->getAllowedTypes());
@@ -1481,7 +1620,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add($product1, $product2, $product3);
 
         // Act
-        $result = $collection->unique(fn($item) => $item->price);
+        $result = $collection->unique(fn ($item) => $item->price);
 
         // Assert
         $this->assertCount(2, $result->toArray());
@@ -1555,7 +1694,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add($inner1, $inner2);
 
         // Act
-        $result = $collection->flatMap(fn($item) => $item);
+        $result = $collection->flatMap(fn ($item) => $item);
 
         // Assert
         $this->assertCount(4, $result->toArray());
@@ -1569,7 +1708,7 @@ final class TypedCollectionTest extends TestCase
         // Arrange
         $collection = new TypedCollection('int');
         $collection->add(1, 2, 3);
-        $filtered = $collection->filter(fn($item) => $item > 1);
+        $filtered = $collection->filter(fn ($item) => $item > 1);
 
         // Act
         $result = $filtered->values();
@@ -1940,7 +2079,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3);
 
         // Act
-        $result = $collection->validate(fn($item, $index) => $item > 0);
+        $result = $collection->validate(fn ($item, $index) => $item > 0);
 
         // Assert
         $this->assertSame($collection, $result);
@@ -1956,7 +2095,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, -3, 4);
 
         // Act
-        $collection->validate(fn($item, $index) => $item > 0);
+        $collection->validate(fn ($item, $index) => $item > 0);
     }
 
     // ========== TESTS POUR STDCLASS ==========
@@ -2207,7 +2346,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add($obj1, $obj2);
 
         // Act
-        $result = $collection->map(fn($item) => $item->value * 2);
+        $result = $collection->map(fn ($item) => $item->value * 2);
 
         // Assert
         $this->assertSame(['int'], $result->getAllowedTypes());
@@ -2230,7 +2369,7 @@ final class TypedCollectionTest extends TestCase
         // Act
         $result = $collection->map(function ($item) {
             $newObj = new stdClass;
-            $newObj->fullName = $item->name . ' Doe';
+            $newObj->fullName = $item->name.' Doe';
 
             return $newObj;
         });
@@ -2377,7 +2516,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(2, 4, 6, 8, 10);
 
         // Act: Check if all items are even
-        $result = $collection->every(fn($item) => $item % 2 === 0);
+        $result = $collection->every(fn ($item) => $item % 2 === 0);
 
         // Assert: All items are even
         $this->assertTrue($result);
@@ -2390,7 +2529,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(2, 4, 5, 8, 10);
 
         // Act: Check if all items are even
-        $result = $collection->every(fn($item) => $item % 2 === 0);
+        $result = $collection->every(fn ($item) => $item % 2 === 0);
 
         // Assert: Not all items are even
         $this->assertFalse($result);
@@ -2402,7 +2541,7 @@ final class TypedCollectionTest extends TestCase
         $collection = new TypedCollection('int');
 
         // Act: Check a predicate on empty collection
-        $result = $collection->every(fn($item) => $item > 100);
+        $result = $collection->every(fn ($item) => $item > 100);
 
         // Assert: Empty collections satisfy any predicate (vacuously true)
         $this->assertTrue($result);
@@ -2418,6 +2557,7 @@ final class TypedCollectionTest extends TestCase
         // Act: Check predicate that fails on first item but track iterations
         $result = $collection->every(function ($item) use (&$iterations) {
             $iterations++;
+
             return $item > 5;
         });
 
@@ -2433,7 +2573,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('apple', 'banana', 'cherry');
 
         // Act: Check if all strings start with a vowel
-        $result = $collection->every(fn($item) => in_array($item[0], ['a', 'e', 'i', 'o', 'u']));
+        $result = $collection->every(fn ($item) => in_array($item[0], ['a', 'e', 'i', 'o', 'u']));
 
         // Assert: 'apple' starts with vowel, 'banana' and 'cherry' do not
         $this->assertFalse($result);
@@ -2450,7 +2590,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act: Check if all products are featured
-        $result = $collection->every(fn($item) => $item->isFeatured === true);
+        $result = $collection->every(fn ($item) => $item->isFeatured === true);
 
         // Assert: All products are featured
         $this->assertTrue($result);
@@ -2463,7 +2603,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(5, 7.5, 3, 8.2);
 
         // Act: Check if all items are greater than 2
-        $result = $collection->every(fn($item) => $item > 2);
+        $result = $collection->every(fn ($item) => $item > 2);
 
         // Assert: All items are greater than 2
         $this->assertTrue($result);
@@ -2474,19 +2614,19 @@ final class TypedCollectionTest extends TestCase
         // Arrange: Create a collection of stdClass objects
         $collection = new TypedCollection(stdClass::class);
 
-        $obj1 = new stdClass();
+        $obj1 = new stdClass;
         $obj1->age = 25;
 
-        $obj2 = new stdClass();
+        $obj2 = new stdClass;
         $obj2->age = 30;
 
-        $obj3 = new stdClass();
+        $obj3 = new stdClass;
         $obj3->age = 28;
 
         $collection->add($obj1, $obj2, $obj3);
 
         // Act: Check if all ages are >= 18
-        $result = $collection->every(fn($item) => $item->age >= 18);
+        $result = $collection->every(fn ($item) => $item->age >= 18);
 
         // Assert: All ages are above 18
         $this->assertTrue($result);
@@ -2501,7 +2641,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(-5, -3, 0, 7, -1);
 
         // Act: Check if any item is positive
-        $result = $collection->some(fn($item) => $item > 0);
+        $result = $collection->some(fn ($item) => $item > 0);
 
         // Assert: At least one positive number exists
         $this->assertTrue($result);
@@ -2514,7 +2654,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(-5, -3, -8, -1, -10);
 
         // Act: Check if any item is positive
-        $result = $collection->some(fn($item) => $item > 0);
+        $result = $collection->some(fn ($item) => $item > 0);
 
         // Assert: No positive numbers exist
         $this->assertFalse($result);
@@ -2526,7 +2666,7 @@ final class TypedCollectionTest extends TestCase
         $collection = new TypedCollection('int');
 
         // Act: Check a predicate on empty collection
-        $result = $collection->some(fn($item) => $item > 0);
+        $result = $collection->some(fn ($item) => $item > 0);
 
         // Assert: Empty collections return false for some()
         $this->assertFalse($result);
@@ -2542,6 +2682,7 @@ final class TypedCollectionTest extends TestCase
         // Act: Check predicate that succeeds on third item
         $result = $collection->some(function ($item) use (&$iterations) {
             $iterations++;
+
             return $item === 3;
         });
 
@@ -2557,7 +2698,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('cat', 'dog', 'elephant', 'fish');
 
         // Act: Check if any string contains the letter 'x'
-        $result = $collection->some(fn($item) => str_contains($item, 'x'));
+        $result = $collection->some(fn ($item) => str_contains($item, 'x'));
 
         // Assert: No string contains 'x'
         $this->assertFalse($result);
@@ -2574,7 +2715,7 @@ final class TypedCollectionTest extends TestCase
         );
 
         // Act: Check if any product is featured
-        $result = $collection->some(fn($item) => $item->isFeatured === true);
+        $result = $collection->some(fn ($item) => $item->isFeatured === true);
 
         // Assert: At least one featured product exists
         $this->assertTrue($result);
@@ -2587,7 +2728,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(42, 'hello', 3.14);
 
         // Act: Check if any item is a boolean
-        $result = $collection->some(fn($item) => is_bool($item));
+        $result = $collection->some(fn ($item) => is_bool($item));
 
         // Assert: No boolean values exist
         $this->assertFalse($result);
@@ -2598,19 +2739,19 @@ final class TypedCollectionTest extends TestCase
         // Arrange: Create a collection of stdClass objects
         $collection = new TypedCollection(stdClass::class);
 
-        $obj1 = new stdClass();
+        $obj1 = new stdClass;
         $obj1->status = 'pending';
 
-        $obj2 = new stdClass();
+        $obj2 = new stdClass;
         $obj2->status = 'processing';
 
-        $obj3 = new stdClass();
+        $obj3 = new stdClass;
         $obj3->status = 'completed';
 
         $collection->add($obj1, $obj2, $obj3);
 
         // Act: Check if any item has status 'completed'
-        $result = $collection->some(fn($item) => $item->status === 'completed');
+        $result = $collection->some(fn ($item) => $item->status === 'completed');
 
         // Assert: At least one completed item exists
         $this->assertTrue($result);
@@ -2625,9 +2766,9 @@ final class TypedCollectionTest extends TestCase
         $collection->add(25, 30, 35, 40);
 
         // Act & Assert: Use both methods for comprehensive validation
-        $this->assertTrue($collection->every(fn($age) => $age >= 18));
-        $this->assertFalse($collection->some(fn($age) => $age >= 65));
-        $this->assertFalse($collection->some(fn($age) => $age < 18));
+        $this->assertTrue($collection->every(fn ($age) => $age >= 18));
+        $this->assertFalse($collection->some(fn ($age) => $age >= 65));
+        $this->assertFalse($collection->some(fn ($age) => $age < 18));
     }
 
     public function test_every_and_some_on_large_collection_performance(): void
@@ -2639,7 +2780,7 @@ final class TypedCollectionTest extends TestCase
 
         // Act & Assert: every() on large collection
         $startTime = microtime(true);
-        $result = $collection->every(fn($item) => $item > 0);
+        $result = $collection->every(fn ($item) => $item > 0);
         $executionTime = microtime(true) - $startTime;
 
         $this->assertTrue($result);
@@ -2647,7 +2788,7 @@ final class TypedCollectionTest extends TestCase
 
         // Act & Assert: some() on large collection
         $startTime = microtime(true);
-        $result = $collection->some(fn($item) => $item === 1000);
+        $result = $collection->some(fn ($item) => $item === 1000);
         $executionTime = microtime(true) - $startTime;
 
         $this->assertTrue($result);
@@ -2661,7 +2802,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add(1, 2, 3, 4, 5);
 
         // Act: every() does not modify the collection
-        $result = $collection->every(fn($item) => $item > 0);
+        $result = $collection->every(fn ($item) => $item > 0);
 
         // Assert: Collection remains unchanged
         $this->assertTrue($result);
@@ -2676,7 +2817,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('apple', 'banana', 'cherry');
 
         // Act: some() does not modify the collection
-        $result = $collection->some(fn($item) => $item === 'banana');
+        $result = $collection->some(fn ($item) => $item === 'banana');
 
         // Assert: Collection remains unchanged
         $this->assertTrue($result);
@@ -2691,7 +2832,7 @@ final class TypedCollectionTest extends TestCase
         $collection->add('hello', null, 'world', null);
 
         // Act: Check if all non-null items are strings
-        $result = $collection->every(fn($item) => $item === null || is_string($item));
+        $result = $collection->every(fn ($item) => $item === null || is_string($item));
 
         // Assert: All items are either null or strings
         $this->assertTrue($result);
@@ -2704,14 +2845,14 @@ final class TypedCollectionTest extends TestCase
         $collection->add('hello', 'world');
 
         // Act: Check if any null exists
-        $result = $collection->some(fn($item) => $item === null);
+        $result = $collection->some(fn ($item) => $item === null);
 
         // Assert: No null values present
         $this->assertFalse($result);
 
         // Act: Add a null and test again
         $collection->add(null);
-        $resultWithNull = $collection->some(fn($item) => $item === null);
+        $resultWithNull = $collection->some(fn ($item) => $item === null);
 
         // Assert: Now a null exists
         $this->assertTrue($resultWithNull);
@@ -2729,8 +2870,8 @@ final class TypedCollectionTest extends TestCase
 
         // Act: Chain operations with every() and some()
         $result = $collection
-            ->filter(fn($item) => $item->price >= 100)
-            ->every(fn($item) => $item->price >= 100);
+            ->filter(fn ($item) => $item->price >= 100)
+            ->every(fn ($item) => $item->price >= 100);
 
         // Assert: After filtering, all items satisfy condition
         $this->assertTrue($result);
@@ -2743,9 +2884,9 @@ final class TypedCollectionTest extends TestCase
             ->add(1, 2, 3, 4, 5);
 
         // Act & Assert: Chain assertions
-        $this->assertTrue($collection->every(fn($item) => $item > 0));
-        $this->assertTrue($collection->some(fn($item) => $item === 5));
-        $this->assertFalse($collection->some(fn($item) => $item > 10));
-        $this->assertFalse($collection->every(fn($item) => $item < 3));
+        $this->assertTrue($collection->every(fn ($item) => $item > 0));
+        $this->assertTrue($collection->some(fn ($item) => $item === 5));
+        $this->assertFalse($collection->some(fn ($item) => $item > 10));
+        $this->assertFalse($collection->every(fn ($item) => $item < 3));
     }
 }

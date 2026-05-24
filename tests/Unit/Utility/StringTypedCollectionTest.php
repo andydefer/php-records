@@ -13,7 +13,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_constructor_creates_empty_collection(): void
     {
         // Arrange & Act
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Assert
         $this->assertTrue($collection->isEmpty());
@@ -23,7 +23,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_add_strings(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act
         $collection->add('hello')->add('world');
@@ -39,14 +39,14 @@ final class StringTypedCollectionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         // Arrange & Act
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add(123);
     }
 
     public function test_to_lowercase(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('HELLO')->add('WoRlD')->add('PHP');
 
         // Act
@@ -60,7 +60,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_to_uppercase(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello')->add('world')->add('php');
 
         // Act
@@ -74,7 +74,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_contains_substring(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world')->add('good morning')->add('hello php');
 
         // Act
@@ -87,7 +87,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_starts_with(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world')->add('world hello')->add('hello php');
 
         // Act
@@ -100,7 +100,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_ends_with(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world')->add('world hello')->add('php world');
 
         // Act
@@ -113,7 +113,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_filter_empty(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello')->add('')->add('world')->add('')->add('php');
 
         // Act
@@ -126,7 +126,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_trim_with_default_characters(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('  hello  ')->add('world')->add('  php  ');
 
         // Act
@@ -139,7 +139,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_trim_with_custom_characters(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('__hello__')->add('world')->add('__php__');
 
         // Act
@@ -152,7 +152,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_truncate(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world')->add('short')->add('very long string here');
 
         // Act
@@ -165,7 +165,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_truncate_without_suffix(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world')->add('short');
 
         // Act
@@ -178,7 +178,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_truncate_preserves_short_strings(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hi')->add('hey')->add('hello');
 
         // Act
@@ -191,7 +191,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_matching_regex(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('user@example.com', 'invalid-email', 'admin@test.com', 'not-an-email');
 
         // Act
@@ -208,7 +208,7 @@ final class StringTypedCollectionTest extends TestCase
         $this->expectExceptionMessage('Invalid regular expression pattern');
 
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('test');
 
         // Act
@@ -218,7 +218,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_matching_regex_returns_empty_when_no_match(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('abc', 'def', 'ghi');
 
         // Act
@@ -231,7 +231,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_join_with_default_separator(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -244,7 +244,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_join_with_custom_separator(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('apple', 'banana', 'cherry');
 
         // Act
@@ -257,7 +257,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_join_on_empty_collection_returns_empty_string(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act
         $result = $collection->join(', ');
@@ -269,7 +269,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_lengths(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php', 'test');
 
         // Act
@@ -283,7 +283,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_lengths_on_empty_collection(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act
         $result = $collection->lengths();
@@ -296,7 +296,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_pad_with_default_parameters(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hi', 'hello', 'hey');
 
         // Act
@@ -309,7 +309,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_pad_with_custom_pad_string(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hi', 'hello', 'hey');
 
         // Act
@@ -322,7 +322,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_pad_left(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hi', 'hello', 'hey');
 
         // Act
@@ -335,7 +335,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_pad_both(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hi', 'hello', 'hey');
 
         // Act
@@ -348,7 +348,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_replace_with_single_values(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world', 'good morning', 'hello php');
 
         // Act
@@ -361,7 +361,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_replace_with_arrays(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world', 'good morning', 'hello php');
 
         // Act
@@ -374,7 +374,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_first_character(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -387,7 +387,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_first_character_on_empty_string(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', '', 'world');
 
         // Act
@@ -400,7 +400,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_last_character(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -413,7 +413,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_last_character_on_empty_string(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', '', 'world');
 
         // Act
@@ -426,7 +426,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_substring_without_length(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world', 'good morning', 'php programming');
 
         // Act
@@ -440,7 +440,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_substring_with_length(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world', 'good morning', 'php programming');
 
         // Act
@@ -453,7 +453,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_substring_with_negative_offset(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -466,7 +466,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_count_matching_regex(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('abc123', 'def456', 'ghi789', 'no_numbers');
 
         // Act
@@ -479,7 +479,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_count_matching_regex_on_empty_collection(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act
         $result = $collection->countMatchingRegex('/\d+/');
@@ -491,7 +491,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_has_matching_regex_returns_true_when_match_exists(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('abc', '123', 'def');
 
         // Act
@@ -504,7 +504,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_has_matching_regex_returns_false_when_no_match(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('abc', 'def', 'ghi');
 
         // Act
@@ -517,7 +517,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_unique_case_insensitive(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('Hello', 'WORLD', 'hello', 'World', 'PHP', 'php');
 
         // Act
@@ -531,7 +531,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_unique_case_insensitive_on_empty_collection(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act
         $result = $collection->uniqueCaseInsensitive();
@@ -543,7 +543,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_sort_case_insensitive_ascending(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('banana', 'Apple', 'cherry', 'apple', 'Banana');
 
         // Act
@@ -565,7 +565,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_sort_case_insensitive_descending(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('banana', 'Apple', 'cherry', 'apple', 'Banana');
 
         // Act
@@ -587,7 +587,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_whitespace(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello world', 'good  morning', 'php   programming', 'no spaces');
 
         // Act
@@ -600,7 +600,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_whitespace_with_tabs_and_newlines(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add("hello\tworld", "good\nmorning", "php\r\nprogramming");
 
         // Act
@@ -613,7 +613,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_slugify(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('Hello World!', 'My Awesome Article', 'PHP 8.0 is great!', 'Special @#$ Characters');
 
         // Act
@@ -629,7 +629,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_slugify_on_already_slugified_string(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('already-slugified', 'another-slug');
 
         // Act
@@ -642,7 +642,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_wrap_with_prefix_and_suffix(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -655,7 +655,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_wrap_with_same_prefix_and_suffix(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -668,7 +668,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_prefix(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('prefix_hello', 'prefix_world', 'no_prefix', 'prefix_php_prefix');
 
         // Act
@@ -681,7 +681,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_prefix_when_prefix_not_present(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -694,7 +694,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_suffix(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello_suffix', 'world_suffix', 'no_suffix_here', 'suffix_php_suffix');
 
         // Act
@@ -707,7 +707,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_remove_suffix_when_suffix_not_present(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act
@@ -720,7 +720,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_chained_operations(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('  HELLO WORLD  ')->add('  GOOD MORNING  ')->add('short');
 
         // Act
@@ -736,7 +736,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_complex_chain_operation(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add(
             '  Hello World!  ',
             '  GOOD MORNING  ',
@@ -762,7 +762,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_original_collection_is_not_modified(): void
     {
         // Arrange
-        $original = new StringTypedCollection();
+        $original = new StringTypedCollection;
         $original->add('Hello')->add('World');
 
         // Act
@@ -778,7 +778,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_empty_collection_operations_return_empty(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
 
         // Act & Assert
         $this->assertTrue($collection->toLowercase()->isEmpty());
@@ -799,7 +799,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_json_serialize(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello')->add('world');
 
         // Act
@@ -812,7 +812,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_to_array_returns_items(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello')->add('world');
 
         // Act & Assert
@@ -822,7 +822,7 @@ final class StringTypedCollectionTest extends TestCase
     public function test_immutability_of_transform_methods(): void
     {
         // Arrange
-        $collection = new StringTypedCollection();
+        $collection = new StringTypedCollection;
         $collection->add('hello', 'world', 'php');
 
         // Act

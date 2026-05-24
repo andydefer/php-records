@@ -34,7 +34,7 @@ final class BoolTypedCollection extends TypedCollection
      */
     public function trueOnly(): self
     {
-        return $this->filter(fn($item): bool => $item === true);
+        return $this->filter(fn ($item): bool => $item === true);
     }
 
     /**
@@ -44,7 +44,7 @@ final class BoolTypedCollection extends TypedCollection
      */
     public function falseOnly(): self
     {
-        return $this->filter(fn($item): bool => $item === false);
+        return $this->filter(fn ($item): bool => $item === false);
     }
 
     /**

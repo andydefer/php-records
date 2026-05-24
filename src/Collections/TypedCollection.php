@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AndyDefer\Records\Collections;
 
-use AndyDefer\Records\Traits\ArrayableTrait;
 use AndyDefer\Records\AbstractRecord;
+use AndyDefer\Records\Traits\ArrayableTrait;
 use Closure;
 use InvalidArgumentException;
 use stdClass;
@@ -115,8 +115,13 @@ class TypedCollection implements TypedCollectionInterface
             return;
         }
 
-        // Nested TypedCollection
+        // Nested TypedCollection OR ANY CHILD CLASS of TypedCollection
         if ($type === self::class) {
+            return;
+        }
+
+        // Vérifie si c'est une sous-classe de TypedCollection (ex: StringTypedCollection)
+        if (class_exists($type) && is_subclass_of($type, self::class)) {
             return;
         }
 
@@ -125,25 +130,29 @@ class TypedCollection implements TypedCollectionInterface
             return;
         }
 
+        // Vérifie si c'est une sous-classe de AbstractRecord
+        if (class_exists($type) && is_subclass_of($type, AbstractRecord::class)) {
+            return;
+        }
+
         // stdClass only - no other objects!
         if ($type === stdClass::class) {
             return;
         }
 
-        // Verification for Record classes
+        // Verification for other classes
         if (! class_exists($type)) {
             throw new InvalidArgumentException(sprintf('Type "%s" is not a valid class', $type));
         }
 
-        if (! is_subclass_of($type, AbstractRecord::class)) {
-            throw new InvalidArgumentException(sprintf(
-                'Type "%s" must extend %s, be %s, be %s, or be a scalar (int, float, string, bool, null)',
-                $type,
-                AbstractRecord::class,
-                self::class,
-                stdClass::class
-            ));
-        }
+        // Si on arrive ici, la classe n'est ni une sous-classe de TypedCollection ni de AbstractRecord
+        throw new InvalidArgumentException(sprintf(
+            'Type "%s" must extend %s, be a subclass of %s, be %s, or be a scalar (int, float, string, bool, null)',
+            $type,
+            AbstractRecord::class,
+            self::class,
+            stdClass::class
+        ));
     }
 
     /**
@@ -184,7 +193,8 @@ class TypedCollection implements TypedCollectionInterface
     private function getValueTypeName(mixed $value): string
     {
         if ($value instanceof self) {
-            return self::class;
+            // Retourne la classe réelle, pas self::class
+            return $value::class;
         }
 
         if ($value instanceof AbstractRecord) {
@@ -196,7 +206,7 @@ class TypedCollection implements TypedCollectionInterface
         }
 
         if (is_object($value)) {
-            return 'object(' . $value::class . ')';
+            return 'object('.$value::class.')';
         }
 
         return self::normalizeType(gettype($value));
@@ -366,8 +376,10 @@ class TypedCollection implements TypedCollectionInterface
         }
 
         $firstResult = $mappedItems[0];
+
+        // CORRECTION : Utiliser get_class() pour obtenir la classe exacte
         $returnType = match (true) {
-            $firstResult instanceof self => self::class,
+            $firstResult instanceof self => $firstResult::class,  // ← Changé : utilise la classe réelle
             $firstResult instanceof AbstractRecord => $firstResult::class,
             $firstResult instanceof stdClass => stdClass::class,
             is_int($firstResult) => 'int',
@@ -398,7 +410,7 @@ class TypedCollection implements TypedCollectionInterface
 
     final public function reject(Closure $callback): static
     {
-        return $this->filter(fn($item) => ! $callback($item));
+        return $this->filter(fn ($item) => ! $callback($item));
     }
 
     final public function each(Closure $callback): static
@@ -556,7 +568,7 @@ class TypedCollection implements TypedCollectionInterface
     {
         $allowedTypes = array_values(array_filter(
             $this->allowedTypes,
-            fn($t) => $t !== $type
+            fn ($t) => $t !== $type
         ));
 
         if (empty($allowedTypes)) {
@@ -891,7 +903,7 @@ class TypedCollection implements TypedCollectionInterface
     final public function assertAllOfType(string $type): static
     {
         if (! $this->isOnlyType($type)) {
-            $actualTypes = implode(', ', array_map(fn($item) => $this->getValueTypeName($item), $this->items));
+            $actualTypes = implode(', ', array_map(fn ($item) => $this->getValueTypeName($item), $this->items));
             throw new InvalidArgumentException(
                 sprintf('Expected all items to be of type "%s", found: %s', $type, $actualTypes)
             );
@@ -912,7 +924,7 @@ class TypedCollection implements TypedCollectionInterface
     final public function assertContainsType(string $type): static
     {
         if (! $this->containsType($type)) {
-            $availableTypes = implode(', ', array_map(fn($item) => $this->getValueTypeName($item), $this->items));
+            $availableTypes = implode(', ', array_map(fn ($item) => $this->getValueTypeName($item), $this->items));
             throw new InvalidArgumentException(
                 sprintf('Collection does not contain type "%s". Available types: %s', $type, $availableTypes)
             );
