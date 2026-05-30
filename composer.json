@@ -1,5 +1,6 @@
 {
     "name": "andydefer/php-records",
+    "abandoned": "andydefer/domain-structures",
     "description": "A typed data structure package that brings type safety to internal application communication in PHP.",
     "license": "MIT",
     "authors": [

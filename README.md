@@ -1,5 +1,23 @@
 # PHP Records
 
+# ⚠️ DEPRECATED / ABANDONED
+
+Ce package n'est plus maintenu.
+
+**Utilisez plutôt :** [`andydefer/domain-structures`](https://github.com/andydefer/domain-structures)
+
+Une bibliothèque PHP complète pour les structures de domaine : Value Objects, Records, Data DTO, Typed Collections, hydratation automatique et normalisation.
+
+## Migration
+
+```bash
+# Remplacer
+composer remove andydefer/php-records
+
+# Par
+composer require andydefer/domain-structures
+```
+---
 **Une bibliothèque de structures de données typées pour la communication interne entre les couches de votre application.**
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)](https://php.net)
